@@ -1,0 +1,2883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AuraCharge — Web App</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0A0D12;--bg-card:#111620;--bg-card2:#161C28;--bg-el:#1C2333;
+  --green:#00E87A;--gd:#00E87A18;--gb:#00E87A44;
+  --red:#FF3B3B;--rd:#FF3B3B18;--rb:#FF3B3B44;
+  --amber:#FFB020;--ad:#FFB02018;--ab:#FFB02044;
+  --blue:#4A8EFF;--bd:#4A8EFF18;
+  --t1:#F0F4FF;--t2:#8A95B0;--t3:#4A5470;
+  --border:#1E2640;--border2:#2A3450;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden;}
+
+/* ── UTILS ── */
+.syne{font-family:'Syne',sans-serif;}
+.green{color:var(--green);}
+.red{color:var(--red);}
+.amber{color:var(--amber);}
+.blue{color:var(--blue);}
+.muted{color:var(--t3);}
+.sub{color:var(--t2);font-size:13px;}
+.label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);}
+.divider{height:1px;background:var(--border);margin:16px 0;}
+.hide{display:none!important;}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;}
+.badge-g{background:var(--gd);color:var(--green);}
+.badge-a{background:var(--ad);color:var(--amber);}
+.badge-r{background:var(--rd);color:var(--red);}
+.badge-b{background:var(--bd);color:var(--blue);}
+.badge-m{background:var(--bg-el);color:var(--t2);}
+
+/* ── SCORE CHIP ── */
+.score-chip{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+  width:46px;height:46px;border-radius:10px;flex-shrink:0;}
+.sc-g{background:var(--gd);border:1px solid var(--gb);}
+.sc-a{background:var(--ad);border:1px solid var(--ab);}
+.sc-r{background:var(--rd);border:1px solid var(--rb);}
+.sc-g .sn{color:var(--green);}
+.sc-a .sn{color:var(--amber);}
+.sc-r .sn{color:var(--red);}
+.sn{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;line-height:1;}
+.sl{font-size:8px;font-weight:600;letter-spacing:.4px;margin-top:2px;}
+.sc-g .sl{color:var(--green);}
+.sc-a .sl{color:var(--amber);}
+.sc-r .sl{color:var(--red);}
+
+/* ── BTNS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;
+  border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s;}
+.btn:hover{opacity:.85;}
+.btn-g{background:var(--green);color:#0A0D12;}
+.btn-r{background:var(--red);color:#fff;}
+.btn-o{background:transparent;border:1px solid var(--border2);color:var(--t2);}
+.btn-b{background:var(--bd);border:1px solid var(--blue);color:var(--blue);}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:8px;}
+.btn-lg{padding:14px 28px;font-size:15px;border-radius:12px;font-family:'Syne',sans-serif;font-weight:700;}
+
+/* ── FORM ── */
+.input{width:100%;background:var(--bg-card2);border:1px solid var(--border2);border-radius:10px;
+  padding:12px 14px;font-size:14px;color:var(--t1);font-family:'DM Sans',sans-serif;outline:none;}
+.input::placeholder{color:var(--t3);}
+.input:focus{border-color:var(--green);}
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;}
+select.input{cursor:pointer;}
+
+/* ── TOGGLE ── */
+.toggle{width:42px;height:22px;border-radius:11px;border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background .2s;}
+.toggle.on{background:var(--green);}
+.toggle.off{background:var(--bg-el);}
+.toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;transition:left .15s;}
+.toggle.on::after{left:23px;}
+.toggle.off::after{left:3px;}
+
+/* ══════════════════════════════════════
+   AUTH LAYER
+══════════════════════════════════════ */
+#auth-layer{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 30% 40%, #0A1A12 0%, var(--bg) 60%);
+  padding:20px;
+}
+.auth-box{
+  width:100%;max-width:420px;background:var(--bg-card);
+  border:1px solid var(--border2);border-radius:20px;padding:36px 32px;
+}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;justify-content:center;}
+.logo-bolt{width:32px;height:32px;background:var(--green);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;}
+.auth-tabs{display:flex;background:var(--bg-card2);border-radius:10px;padding:4px;margin-bottom:24px;gap:4px;}
+.auth-tab{flex:1;padding:8px;border:none;border-radius:8px;font-size:13px;font-weight:600;
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;background:transparent;color:var(--t2);}
+.auth-tab.active{background:var(--bg-el);color:var(--t1);}
+.auth-role-select{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.role-card{padding:14px;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;text-align:center;
+  background:var(--bg-card2);transition:all .15s;}
+.role-card:hover{border-color:var(--border2);}
+.role-card.selected{border-color:var(--green);background:var(--gd);}
+.role-icon{width:40px;height:40px;border-radius:10px;margin:0 auto 8px;
+  display:flex;align-items:center;justify-content:center;}
+.role-title{font-size:13px;font-weight:700;font-family:'Syne',sans-serif;}
+.role-sub{font-size:11px;color:var(--t2);margin-top:2px;}
+
+/* ══════════════════════════════════════
+   MAIN APP
+══════════════════════════════════════ */
+#app-layer{display:none;min-height:100vh;flex-direction:column;}
+#app-layer.active{display:flex;}
+
+/* ── TOP BAR ── */
+.app-topbar{
+  height:60px;background:var(--bg-card);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0;position:sticky;top:0;z-index:100;
+}
+.app-logo{display:flex;align-items:center;gap:8px;font-family:'Syne',sans-serif;font-weight:800;font-size:17px;}
+.top-nav{display:flex;gap:2px;margin-left:16px;}
+.top-nav-btn{padding:7px 14px;border-radius:8px;border:none;background:transparent;
+  font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.top-nav-btn.active{background:var(--gd);color:var(--green);}
+.top-nav-btn:hover:not(.active){background:var(--bg-card2);}
+.topbar-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.notif-btn{width:34px;height:34px;border-radius:9px;background:var(--bg-card2);
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;}
+.ndot{position:absolute;top:6px;right:6px;width:7px;height:7px;background:var(--red);
+  border-radius:50%;border:1.5px solid var(--bg-card);}
+.user-chip{display:flex;align-items:center;gap:8px;padding:5px 10px 5px 5px;
+  background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;cursor:pointer;}
+.user-av{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#1C3A5E,#0F2040);
+  border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:var(--green);font-family:'Syne',sans-serif;}
+.user-name{font-size:12px;font-weight:600;}
+.role-badge{font-size:10px;padding:2px 7px;border-radius:5px;font-weight:600;}
+
+/* ── LAYOUT ── */
+.app-body{display:flex;flex:1;overflow:hidden;}
+.sidebar{
+  width:220px;flex-shrink:0;background:var(--bg-card);border-right:1px solid var(--border);
+  padding:16px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;
+}
+.sidebar-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
+  color:var(--t3);padding:14px 12px 6px;margin-top:4px;}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;
+  font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .15s;position:relative;}
+.sidebar-item:hover{background:var(--bg-card2);color:var(--t1);}
+.sidebar-item.active{background:var(--gd);color:var(--green);}
+.sidebar-badge{margin-left:auto;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;}
+
+.main-content{flex:1;overflow-y:auto;padding:24px;}
+
+/* ── PAGE ── */
+.page{display:none;}
+.page.active{display:block;}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:12px;flex-wrap:wrap;}
+.page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;}
+.page-sub{font-size:13px;color:var(--t2);margin-top:3px;}
+
+/* ── GRIDS ── */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+.grid-2{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:20px;}
+.grid-2-eq{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+@media(max-width:1100px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-2{grid-template-columns:1fr;}}
+
+/* ── STAT CARD ── */
+.stat-card{background:var(--bg-card2);border:1px solid var(--border);border-radius:14px;padding:18px;}
+.stat-lbl{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;font-weight:500;}
+.stat-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;line-height:1;margin-bottom:4px;}
+.stat-delta{font-size:11px;font-weight:500;}
+
+/* ── PANEL ── */
+.panel{background:var(--bg-card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;}
+.panel-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:16px;
+  display:flex;align-items:center;justify-content:space-between;}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;
+  text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);font-weight:600;}
+.tbl td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.tbl tr:last-child td{border:none;}
+.tbl tr:hover td{background:var(--bg-el);}
+
+/* ── MAP PREVIEW ── */
+.map-preview{
+  border-radius:12px;background:var(--bg-el);position:relative;overflow:hidden;
+  background:repeating-linear-gradient(0deg,transparent,transparent 29px,var(--border) 29px,var(--border) 30px),
+             repeating-linear-gradient(90deg,transparent,transparent 29px,var(--border) 30px,var(--border) 30px);
+}
+.map-pin-dot{position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;font-family:'Syne',sans-serif;cursor:pointer;
+  transform:translate(-50%,-50%);transition:transform .15s;}
+.map-pin-dot:hover{transform:translate(-50%,-50%) scale(1.2);}
+.map-legend{position:absolute;bottom:10px;right:10px;background:#000000BB;border:1px solid var(--border);
+  border-radius:8px;padding:7px 10px;font-size:10px;display:flex;gap:12px;}
+
+/* ── GUARDIAN TIMER ── */
+.guardian-widget{background:linear-gradient(135deg,#0A1A12,#0A0D18);border:1px solid var(--gb);
+  border-radius:16px;padding:24px;text-align:center;}
+.timer-svg-wrap{position:relative;width:160px;height:160px;margin:0 auto 16px;}
+.timer-svg{position:absolute;top:0;left:0;transform:rotate(-90deg);}
+.timer-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;align-items:center;}
+.timer-num{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--green);line-height:1;}
+.timer-sub-text{font-size:11px;color:var(--t3);margin-top:3px;}
+.g-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
+.g-safe{background:var(--green);border:none;border-radius:12px;padding:14px;
+  font-size:14px;font-weight:800;color:#0A0D12;cursor:pointer;font-family:'Syne',sans-serif;}
+.g-sos{background:var(--rd);border:2px solid var(--red);border-radius:12px;padding:14px;
+  font-size:14px;font-weight:800;color:var(--red);cursor:pointer;font-family:'Syne',sans-serif;}
+
+/* ── PILLAR BARS ── */
+.pillar-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);}
+.pillar-name{font-size:12px;width:140px;flex-shrink:0;color:var(--t2);}
+.pillar-track{flex:1;height:5px;background:var(--bg-el);border-radius:3px;}
+.pillar-fill{height:5px;border-radius:3px;}
+.pillar-score{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;min-width:36px;text-align:right;}
+
+/* ── HEATMAP ── */
+.heatmap-grid{display:grid;gap:3px;}
+.heat-cell{height:38px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:opacity .15s;}
+.heat-cell:hover{opacity:.75;}
+.heat-labels{display:grid;gap:3px;align-items:center;}
+
+/* ── HUB CARD ── */
+.hub-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;
+  padding:16px;display:flex;gap:14px;align-items:flex-start;cursor:pointer;
+  transition:border-color .15s;margin-bottom:10px;}
+.hub-card:hover{border-color:var(--border2);}
+.hub-icon{width:56px;height:56px;border-radius:12px;flex-shrink:0;background:var(--bg-el);
+  display:flex;align-items:center;justify-content:center;}
+.hub-info{flex:1;min-width:0;}
+.hub-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:3px;}
+.hub-meta{font-size:12px;color:var(--t2);margin-bottom:7px;}
+.hub-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.tag{font-size:10px;padding:3px 8px;border-radius:5px;font-weight:500;}
+.tg{background:var(--gd);color:var(--green);}
+.ta{background:var(--ad);color:var(--amber);}
+.tm{background:var(--bg-el);color:var(--t2);}
+.tr{background:var(--rd);color:var(--red);}
+
+/* ── ACTIVITY LOG ── */
+.log-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.log-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.log-main{font-size:13px;font-weight:500;}
+.log-sub{font-size:11px;color:var(--t2);margin-top:2px;}
+
+/* ── ALERT ITEM ── */
+.alert-item{display:flex;gap:12px;padding:12px;border-radius:10px;margin-bottom:8px;cursor:pointer;}
+.alert-item.urgent{background:var(--rd);border:1px solid var(--rb);}
+.alert-item.warn{background:var(--ad);border:1px solid var(--ab);}
+.alert-item.info{background:var(--bg-card2);border:1px solid var(--border);}
+.alert-item.ok{background:var(--gd);border:1px solid var(--gb);}
+
+/* ── CPO GATE ── */
+#cpo-gate{
+  min-height:100vh;display:none;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 70% 30%, #140A00 0%, var(--bg) 60%);padding:20px;
+}
+#cpo-gate.active{display:flex;}
+
+/* ── NOTIFICATION PANEL ── */
+.notif-panel{
+  position:fixed;top:60px;right:16px;width:340px;background:var(--bg-card);
+  border:1px solid var(--border2);border-radius:14px;z-index:200;
+  box-shadow:0 20px 50px #00000060;display:none;overflow:hidden;
+}
+.notif-panel.open{display:block;}
+.notif-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.notif-item{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;}
+.notif-item:hover{background:var(--bg-card2);}
+
+/* ── SESSION CARD ── */
+.session-card{background:var(--bg-el);border-radius:10px;padding:12px;margin-bottom:8px;
+  display:flex;justify-content:space-between;align-items:center;}
+
+/* ── RESPONSIVE SIDEBAR COLLAPSE ── */
+@media(max-width:900px){.sidebar{width:56px;}.sidebar-item span,.sidebar-section,.sidebar-badge{display:none;}}
+
+/* ── MOBILE LAYOUT — bottom nav bar ── */
+@media(max-width:600px){
+  /* Hide sidebar entirely on mobile */
+  .sidebar{ display:none !important; }
+
+  /* Full width content */
+  .app-body{ flex-direction:column; }
+  .page{ padding:12px; }
+  .page-header{ flex-direction:column; gap:10px; padding-bottom:12px; }
+  .page-title{ font-size:18px; }
+
+  /* Topbar adjustments */
+  .app-topbar{ padding:0 12px; }
+  .app-logo span{ font-size:15px; }
+
+  /* Grid adjustments */
+  .grid-2,.grid-2-eq,.grid-3,.grid-4{ grid-template-columns:1fr !important; }
+
+  /* Hub cards */
+  .hub-card{ padding:12px; }
+  .hub-name{ font-size:14px; }
+
+  /* Auth box */
+  .auth-box{ padding:24px 16px; margin:16px; border-radius:16px; }
+
+  /* Panels */
+  .panel{ padding:14px; }
+
+  /* Bottom nav bar */
+  #mobile-nav{
+    display:flex !important;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    height:60px;
+    background:var(--bg-card);
+    border-top:1px solid var(--border2);
+    z-index:200;
+    align-items:center;
+    justify-content:space-around;
+    padding:0 4px;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+
+  /* Add padding to page content so it clears the bottom nav */
+  #app-content{ padding-bottom:70px; }
+
+  /* Site modal full screen on mobile */
+  #site-modal{ border-radius:0; max-height:100vh; }
+
+  /* AuraPath modal full screen on mobile */
+  #aurapath-sheet{ border-radius:0; }
+
+  /* Guardian widget stack */
+  .guardian-widget{ padding:16px; }
+  .timer-svg-wrap{ margin:16px auto; }
+
+  /* Score chips smaller */
+  .score-chip .sn{ font-size:18px; }
+
+  /* Stat cards */
+  .stat-card{ padding:12px; }
+  .stat-val{ font-size:24px; }
+
+  /* Buttons full width on mobile forms */
+  .btn-lg{ width:100%; justify-content:center; }
+
+  /* Nav provider cards on AuraPath */
+  #aurapath-modal .nav-provider-card{ padding:10px 4px; }
+}
+
+/* Mobile nav item style */
+.mob-nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 10px;border-radius:10px;cursor:pointer;
+  font-size:9px;font-weight:600;color:var(--t3);
+  text-transform:uppercase;letter-spacing:.3px;
+  transition:all .15s;flex:1;
+}
+.mob-nav-item.active{ color:var(--green); background:var(--gd); }
+.mob-nav-item svg{ flex-shrink:0; }</style>
+</head>
+<body>
+
+<!-- ── MOBILE BOTTOM NAV ── -->
+<div id="mobile-nav" style="display:none;">
+  <!-- Driver nav (shown when driver logged in) -->
+  <div id="mob-driver-nav" style="display:contents;">
+    <div class="mob-nav-item active" id="mob-overview" onclick="navTo('overview',null);setMobActive('mob-overview')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
+      Home
+    </div>
+    <div class="mob-nav-item" id="mob-navigate" onclick="navTo('navigate',null);setMobActive('mob-navigate')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg>
+      Navigate
+    </div>
+    <div class="mob-nav-item" id="mob-guardian" onclick="navTo('guardian-page',null);setMobActive('mob-guardian')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 6v7c0 5.25 3.75 10.15 9 11.35C17.25 23.15 21 18.25 21 13V6L12 2Z" stroke="currentColor" stroke-width="1.8"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Guardian
+    </div>
+    <div class="mob-nav-item" id="mob-activity" onclick="navTo('my-activity',null);setMobActive('mob-activity')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Activity
+    </div>
+    <div class="mob-nav-item" id="mob-settings" onclick="navTo('settings',null);setMobActive('mob-settings')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8"/></svg>
+      Settings
+    </div>
+  </div>
+</div>
+<div id="auth-layer">
+<div class="auth-box">
+  <div class="auth-logo">
+    <div class="logo-bolt"><svg width="16" height="16" viewBox="0 0 14 18" fill="none"><path d="M8 1L1 10H7L6 17L13 8H7L8 1Z" fill="#0A0D12"/></svg></div>
+    <span class="syne" style="font-size:20px;font-weight:800;">AuraCharge</span>
+  </div>
+
+  <div class="auth-tabs">
+    <button class="auth-tab active" id="tab-login" onclick="setAuthMode('login')">Sign In</button>
+    <button class="auth-tab" id="tab-signup" onclick="setAuthMode('signup')">Create Account</button>
+  </div>
+
+  <div id="auth-login">
+    <div style="margin-bottom:16px;">
+      <div class="label" style="margin-bottom:10px;">Sign in as</div>
+      <div class="auth-role-select">
+        <div class="role-card selected" id="role-driver" onclick="selectRole('driver')">
+          <div class="role-icon" style="background:var(--gd);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#00E87A" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#00E87A" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div class="role-title">Driver</div>
+          <div class="role-sub">Personal safety</div>
+        </div>
+        <div class="role-card" id="role-cpo" onclick="selectRole('cpo')">
+          <div class="role-icon" style="background:var(--ad);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#FFB020" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="#FFB020" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="#FFB020" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="#FFB020" stroke-width="1.8"/></svg>
+          </div>
+          <div class="role-title">CPO</div>
+          <div class="role-sub">Operator portal</div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email address</label>
+      <input class="input" type="email" placeholder="you@example.com" id="login-email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="input" type="password" placeholder="Your password" id="login-pw">
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="checkbox" style="accent-color:var(--green);"> Keep me signed in</div>
+      <span style="font-size:13px;color:var(--green);cursor:pointer;">Forgot password?</span>
+    </div>
+    <button class="btn btn-g btn-lg" style="width:100%;justify-content:center;" onclick="doLogin()">Sign In →</button>
+    <div style="margin-top:14px;text-align:center;font-size:12px;color:var(--t3);">Demo: use any email. Driver = driver portal. CPO = operator portal.</div>
+  </div>
+
+  <div id="auth-signup" class="hide">
+    <div class="form-group">
+      <label class="form-label">Full name</label>
+      <input class="input" type="text" placeholder="e.g. Joshua Odejayi" id="su-name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="input" type="email" placeholder="you@example.com" id="su-email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mobile</label>
+      <input class="input" type="tel" placeholder="+44 7700 000000" id="su-mobile">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="input" type="password" placeholder="Min. 8 characters" id="su-pw">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Account type</label>
+      <select class="input" id="su-role">
+        <option value="driver">Driver — personal safety &amp; navigation</option>
+        <option value="cpo">CPO — charging point operator</option>
+      </select>
+    </div>
+    <button class="btn btn-g btn-lg" style="width:100%;justify-content:center;margin-top:4px;" onclick="doSignup()">Create Account →</button>
+    <div style="margin-top:12px;text-align:center;font-size:11px;color:var(--t3);line-height:1.6;">By continuing you agree to our Terms of Service.<br>Your data is never sold or shared. GDPR compliant.</div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════ CPO GATE ═══════════════════ -->
+<div id="cpo-gate">
+<div class="auth-box" style="max-width:440px;">
+  <div class="auth-logo">
+    <div class="logo-bolt"><svg width="16" height="16" viewBox="0 0 14 18" fill="none"><path d="M8 1L1 10H7L6 17L13 8H7L8 1Z" fill="#0A0D12"/></svg></div>
+    <span class="syne" style="font-size:20px;font-weight:800;">AuraCharge</span>
+  </div>
+  <div style="text-align:center;margin-bottom:24px;">
+    <div style="width:52px;height:52px;background:var(--ad);border:1px solid var(--ab);border-radius:14px;
+      display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#FFB020" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="#FFB020" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="#FFB020" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="#FFB020" stroke-width="1.8"/></svg>
+    </div>
+    <div class="syne" style="font-size:18px;font-weight:700;margin-bottom:6px;">CPO Operator Portal</div>
+    <div class="sub">Restricted access. Charging Point Operators only.<br>Verify your operator account to continue.</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Operator Email</label>
+    <input class="input" type="email" placeholder="operator@yourcompany.com" id="cpo-email">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Operator Password</label>
+    <input class="input" type="password" placeholder="Operator account password" id="cpo-pw">
+  </div>
+  <div style="background:var(--ad);border:1px solid var(--ab);border-radius:10px;padding:11px 14px;margin-bottom:18px;font-size:12px;color:var(--amber);display:flex;gap:8px;align-items:flex-start;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px;"><path d="M12 2L3 6v7c0 5.25 3.75 10.15 9 11.35C17.25 23.15 21 18.25 21 13V6L12 2Z" stroke="#FFB020" stroke-width="1.8"/></svg>
+    This portal contains commercially sensitive site performance data. Unauthorised access is prohibited under the Computer Misuse Act 1990.
+  </div>
+  <button class="btn btn-g btn-lg" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="doCPOLogin()">Access Operator Portal →</button>
+  <button class="btn btn-o" style="width:100%;justify-content:center;font-size:13px;" onclick="showAuth()">← Back to main login</button>
+</div>
+</div>
+
+<!-- ═══════════════════ MAIN APP ═══════════════════ -->
+<div id="app-layer">
+
+<!-- TOP BAR -->
+<div class="app-topbar">
+  <div class="app-logo">
+    <div class="logo-bolt"><svg width="14" height="14" viewBox="0 0 14 18" fill="none"><path d="M8 1L1 10H7L6 17L13 8H7L8 1Z" fill="#0A0D12"/></svg></div>
+    AuraCharge
+  </div>
+  <div class="top-nav" id="driver-top-nav">
+    <button class="top-nav-btn active" onclick="navTo('overview',this)">Overview</button>
+    <button class="top-nav-btn" onclick="navTo('navigate',this)">Navigate</button>
+    <button class="top-nav-btn" onclick="navTo('guardian-page',this)">Guardian Mode</button>
+    <button class="top-nav-btn" onclick="navTo('my-activity',this)">My Activity</button>
+    <button class="top-nav-btn" onclick="navTo('audit',this)">Site Audit</button>
+  </div>
+  <div class="top-nav hide" id="cpo-top-nav">
+    <button class="top-nav-btn active" onclick="navTo('cpo-overview',this)">Overview</button>
+    <button class="top-nav-btn" onclick="navTo('cpo-sites',this)">My Sites</button>
+    <button class="top-nav-btn" onclick="navTo('cpo-heatmap',this)">Heatmaps</button>
+    <button class="top-nav-btn" onclick="navTo('cpo-guardian',this)">Guardian Events</button>
+    <button class="top-nav-btn" onclick="navTo('cpo-reports',this)">Reports</button>
+  </div>
+  <div class="topbar-right">
+    <div class="notif-btn" onclick="toggleNotif()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#8A95B0" stroke-width="1.8" stroke-linecap="round"/><path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#8A95B0" stroke-width="1.8"/></svg>
+      <div class="ndot"></div>
+    </div>
+    <div class="user-chip">
+      <div class="user-av" id="av-initials">JO</div>
+      <span class="user-name" id="display-name">Joshua O.</span>
+      <span class="role-badge badge-g" id="role-display">Driver</span>
+    </div>
+    <button class="btn btn-o btn-sm" onclick="doLogout()">Sign out</button>
+  </div>
+</div>
+
+<!-- NOTIFICATION PANEL -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-head">
+    <span class="syne" style="font-size:13px;font-weight:700;">Notifications</span>
+    <span style="font-size:12px;color:var(--green);cursor:pointer;">Mark all read</span>
+  </div>
+  <div class="notif-item">
+    <div style="width:8px;height:8px;background:var(--red);border-radius:50%;flex-shrink:0;margin-top:4px;"></div>
+    <div><div style="font-size:13px;font-weight:500;">Guardian check-in reminder</div><div class="sub" style="font-size:11px;">Aztec West · 2 min ago</div></div>
+  </div>
+  <div class="notif-item">
+    <div style="width:8px;height:8px;background:var(--amber);border-radius:50%;flex-shrink:0;margin-top:4px;"></div>
+    <div><div style="font-size:13px;font-weight:500;">AuraScore drop — Cribbs Causeway</div><div class="sub" style="font-size:11px;">74 → 58 (CCTV offline) · 14 min ago</div></div>
+  </div>
+  <div class="notif-item">
+    <div style="width:8px;height:8px;background:var(--green);border-radius:50%;flex-shrink:0;margin-top:4px;"></div>
+    <div><div style="font-size:13px;font-weight:500;">New Aura-verified hub nearby</div><div class="sub" style="font-size:11px;">Bradley Stoke Lidl · Score: 91 · 2h ago</div></div>
+  </div>
+</div>
+
+<!-- APP BODY -->
+<div class="app-body">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <!-- Driver sidebar -->
+  <div id="driver-sidebar">
+    <div class="sidebar-section"><span>Driver</span></div>
+    <div class="sidebar-item active" onclick="navTo('overview',null,this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 12L12 3l9 9M5 10v9h5v-4h4v4h5v-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Overview</span>
+    </div>
+    <div class="sidebar-item" onclick="navTo('navigate',null,this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.8"/><path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Navigate</span>
+    </div>
+    <div class="sidebar-item" onclick="navTo('guardian-page',null,this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 6v7c0 5.25 3.75 10.15 9 11.35C17.25 23.15 21 18.25 21 13V6L12 2Z" stroke="currentColor" stroke-width="1.8"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Guardian Mode</span>
+    </div>
+    <div class="sidebar-item" onclick="navTo('my-activity',null,this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.8"/><polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="1.8"/><line x1="9" y1="13" x2="15" y2="13" stroke="currentColor" stroke-width="1.8"/><line x1="9" y1="17" x2="12" y2="17" stroke="currentColor" stroke-width="1.8"/></svg>
+      <span>My Activity &amp; Logs</span>
+    </div>
+    <div class="sidebar-item" onclick="navTo('audit',null,this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3 8-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9" stroke="currentColor" stroke-width="1.8"/></svg>
+      <span>Submit Site Audit</span>
+      <span class="sidebar-badge badge-g">New</span>
+    </div>
+    <div class="sidebar-item" onclick="navTo('alerts-page',null,this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Alerts</span>
+      <span class="sidebar-badge badge-r">2</span>
+    </div>
+    <div style="flex:1;"></div>
+    <div class="sidebar-item" onclick="navTo('settings',null,this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Settings</span>
+    </div>
+  </div>
+
+  <!-- CPO sidebar -->
+  <div id="cpo-sidebar" class="hide">
+    <div class="sidebar-section"><span>Operator</span></div>
+    <div class="sidebar-item active" onclick="navTo('cpo-overview',null,this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/></svg>
+      <span>Overview</span>
+    </div>
+    <div class="sidebar-item" onclick="navTo('cpo-sites',null,this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.8"/><path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>My Sites</span>
+    </div>
+    <div class="sidebar-item" onclick="navTo('cpo-heatmap',null,this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke="currentColor" stroke-width="1.2" opacity=".5"/></svg>
+      <span>Safety Heatmaps</span>
+    </div>
+    <div class="sidebar-item" onclick="navTo('cpo-guardian',null,this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 6v7c0 5.25 3.75 10.15 9 11.35C17.25 23.15 21 18.25 21 13V6L12 2Z" stroke="currentColor" stroke-width="1.8"/></svg>
+      <span>Guardian Events</span>
+      <span class="sidebar-badge badge-r">7</span>
+    </div>
+    <div class="sidebar-item" onclick="navTo('cpo-reports',null,this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.8"/><polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="1.8"/></svg>
+      <span>Audit Reports</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content" id="main-content">
+
+<!-- ══ DRIVER PAGES ══ -->
+
+<!-- Overview -->
+<div class="page active" id="page-overview">
+  <div class="page-header">
+    <div><div class="page-title">Good evening, <span class="green" id="greeting-name">Joshua</span>.</div><div class="page-sub">Patchway, England · Safe charging nearby · <span class="green">Area AuraScore: 82</span></div></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-o btn-sm" onclick="navTo('navigate',null)">Find Hubs</button>
+      <button class="btn btn-g btn-sm" onclick="navTo('guardian-page',null)">⚡ Activate Guardian</button>
+    </div>
+  </div>
+  <div class="grid-4">
+    <div class="stat-card"><div class="stat-lbl">Nearest Hub</div><div class="stat-val green">0.4 mi</div><div class="stat-delta" style="color:var(--t2);">Aztec West Retail</div></div>
+    <div class="stat-card"><div class="stat-lbl">Area AuraScore™</div><div class="stat-val green" id="overview-avg-score">82</div><div class="stat-delta green">Live network avg</div></div>
+    <div class="stat-card"><div class="stat-lbl">My Sessions (30d)</div><div class="stat-val green">23</div><div class="stat-delta green">↑ 4 vs last month</div></div>
+    <div class="stat-card"><div class="stat-lbl">Community Reports</div><div class="stat-val" style="color:var(--t1);">12</div><div class="stat-delta" style="color:var(--t2);">You've submitted</div></div>
+  </div>
+  <div class="grid-2">
+    <div>
+      <div class="panel">
+        <div class="panel-title">Top Rated Hubs — UK Network <span class="badge badge-g">Live</span></div>
+        <div id="overview-hub-list">
+          <div style="padding:16px;color:var(--t3);font-size:13px;">Loading live sites…</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <div class="panel-title">Recent Guardian Sessions</div>
+        <div class="session-card"><div><div style="font-size:13px;font-weight:500;">Aztec West Retail Park</div><div class="sub" style="font-size:11px;">Mar 21, 2026 · 22:09 · 45 min</div></div><span class="badge badge-g">Completed</span></div>
+        <div class="session-card"><div><div style="font-size:13px;font-weight:500;">Cribbs Causeway Tesla</div><div class="sub" style="font-size:11px;">Mar 17, 2026 · 21:12 · 32 min</div></div><span class="badge badge-g">Completed</span></div>
+        <div class="session-card"><div><div style="font-size:13px;font-weight:500;">Bradley Stoke Lidl</div><div class="sub" style="font-size:11px;">Mar 12, 2026 · 20:05 · Escalated</div></div><span class="badge badge-r">Escalated</span></div>
+        <button class="btn btn-o btn-sm" style="width:100%;justify-content:center;margin-top:8px;" onclick="navTo('my-activity',null)">View all activity & logs →</button>
+      </div>
+      <div class="panel">
+        <div class="panel-title">My Emergency Contacts</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div><div style="font-size:13px;font-weight:500;">Maria Santos</div><div class="sub" style="font-size:11px;">Sister · Preferred</div></div>
+          <span class="badge badge-g">Primary</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+          <div><div style="font-size:13px;font-weight:500;">Daniel Brooks</div><div class="sub" style="font-size:11px;">Friend</div></div>
+          <span class="badge badge-m">Secondary</span>
+        </div>
+        <button class="btn btn-o btn-sm" style="margin-top:8px;width:100%;justify-content:center;" onclick="navTo('settings',null)">Manage contacts</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigate -->
+<div class="page" id="page-navigate">
+  <div class="page-header">
+    <div><div class="page-title">Navigate — Find Safer Hubs</div><div class="page-sub">AuraPath routes you to the safest available charger</div></div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <select class="input" style="width:auto;padding:8px 12px;font-size:13px;"><option>Min AuraScore: 70+</option><option>60+</option><option>50+</option><option>Any</option></select>
+      <button class="btn btn-g btn-sm" onclick="navTo('guardian-page',null)">Start Guardian at Hub</button>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div>
+      <div class="panel" style="padding:0;overflow:hidden;">
+        <div class="map-preview" style="height:320px;">
+          <div class="map-pin-dot" style="width:32px;height:32px;background:#00E87A22;border:2px solid #00E87A;color:#00E87A;top:35%;left:50%;">88</div>
+          <div class="map-pin-dot" style="width:28px;height:28px;background:#00E87A22;border:2px solid #00E87A;color:#00E87A;top:25%;left:38%;">91</div>
+          <div class="map-pin-dot" style="width:28px;height:28px;background:#FFB02022;border:2px solid #FFB020;color:#FFB020;top:55%;left:62%;">74</div>
+          <div class="map-pin-dot" style="width:24px;height:24px;background:#FF3B3B22;border:2px solid #FF3B3B;color:#FF3B3B;top:65%;left:45%;">48</div>
+          <div class="map-pin-dot" style="width:28px;height:28px;background:#00E87A22;border:2px solid #00E87A;color:#00E87A;top:45%;left:72%;">82</div>
+          <!-- User -->
+          <div style="position:absolute;top:50%;left:55%;transform:translate(-50%,-50%);">
+            <div style="width:14px;height:14px;border-radius:50%;background:var(--blue);border:2px solid #fff;box-shadow:0 0 0 5px #4A8EFF33;"></div>
+          </div>
+          <div style="position:absolute;top:10px;left:12px;background:#000000BB;border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:11px;">📍 Patchway · Nearest 0.4 mi</div>
+          <div style="position:absolute;top:10px;right:12px;background:#000000BB;border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:11px;color:var(--green);">● Live · 4m ago</div>
+          <div class="map-legend"><span style="color:var(--green);">● ≥70</span><span style="color:var(--amber);">● 50–69</span><span style="color:var(--red);">● &lt;50</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="overflow-y:auto;max-height:360px;" id="hub-list-live">
+      <div class="hub-card">
+        <div class="hub-info"><div class="hub-name">Aztec West Retail Park</div><div class="hub-meta">0.4 mi · CCS · Type 2 · 8 stalls · Avail: 6/8</div><div class="hub-tags"><span class="tag tg">CCTV</span><span class="tag tg">Staffed</span><span class="tag tg">24/7</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
+          <div class="score-chip sc-g"><div class="sn">88</div><div class="sl">Aura</div></div>
+          <button class="btn btn-g btn-sm" onclick="routeToHub(sites[0])">Route</button>
+        </div>
+      </div>
+      <div class="hub-card">
+        <div class="hub-info"><div class="hub-name">Bradley Stoke Lidl</div><div class="hub-meta">1.9 mi · Type 2 · 4 stalls · Avail: 1/4</div><div class="hub-tags"><span class="tag tg">Bright LEDs</span><span class="tag tm">Closes 22:00</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
+          <div class="score-chip sc-g"><div class="sn">91</div><div class="sl">Aura</div></div>
+          <button class="btn btn-g btn-sm" onclick="routeToHub(sites[1])">Route</button>
+        </div>
+      </div>
+      <div class="hub-card">
+        <div class="hub-info"><div class="hub-name">Cribbs Causeway Tesla</div><div class="hub-meta">1.2 mi · Supercharger · 12 stalls · Avail: 4/12</div><div class="hub-tags"><span class="tag ta">Partial CCTV</span><span class="tag tm">24/7</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
+          <div class="score-chip sc-a"><div class="sn">74</div><div class="sl">Aura</div></div>
+          <button class="btn btn-o btn-sm" onclick="routeToHub(sites[2])">Route</button>
+        </div>
+      </div>
+      <div class="hub-card">
+        <div class="hub-info"><div class="hub-name">Gainsborough Retail</div><div class="hub-meta">3.1 mi · CHAdeMO · 2 stalls · Avail: 2/2</div><div class="hub-tags"><span class="tag tr">No CCTV</span><span class="tag tr">Low lighting</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
+          <div class="score-chip sc-r"><div class="sn">48</div><div class="sl">Aura</div></div>
+          <button class="btn btn-o btn-sm" style="border-color:var(--red);color:var(--red);" onclick="routeToHub(sites[3])">Route</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Guardian Mode -->
+<div class="page" id="page-guardian-page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Guardian Mode</div>
+      <div class="page-sub">Dead man's switch · Twilio SOS protocol · Auto-escalation</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span class="badge" id="guardian-status-badge" style="font-size:12px;padding:6px 14px;background:var(--bg-el);color:var(--t2);">Not Active</span>
+      <button class="btn btn-g btn-sm" id="guardian-start-btn" onclick="activateGuardianMode()">⚡ Activate Now</button>
+    </div>
+  </div>
+
+  <!-- Inactive state -->
+  <div id="guardian-inactive" style="text-align:center;padding:40px 20px;">
+    <div style="width:80px;height:80px;border-radius:22px;background:var(--gd);border:1px solid var(--gb);
+      display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2L3 6v7c0 5.25 3.75 10.15 9 11.35C17.25 23.15 21 18.25 21 13V6L12 2Z"
+          fill="var(--gd)" stroke="var(--green)" stroke-width="1.8"/>
+        <path d="M9 12l2 2 4-4" stroke="var(--green)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="syne" style="font-size:18px;font-weight:700;margin-bottom:8px;">Guardian Mode is off</div>
+    <div class="sub" style="max-width:400px;margin:0 auto 24px;line-height:1.6;">
+      Activate Guardian Mode when you arrive at a charging station. AuraCharge will monitor your check-ins and escalate automatically if you don't respond.
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:500px;margin:0 auto 28px;">
+      <div class="stat-card" style="text-align:center;">
+        <div class="stat-lbl">Check-in interval</div>
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--green);" id="gm-interval-display">20 min</div>
+      </div>
+      <div class="stat-card" style="text-align:center;">
+        <div class="stat-lbl">Escalate after</div>
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--amber);">5 min</div>
+      </div>
+      <div class="stat-card" style="text-align:center;">
+        <div class="stat-lbl">Emergency contacts</div>
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--green);" id="gm-contact-count">—</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-g" style="padding:14px 28px;font-size:15px;" onclick="activateGuardianMode()">
+        ⚡ Activate Guardian Mode
+      </button>
+      <button class="btn btn-o" style="padding:14px 28px;font-size:15px;" onclick="navTo('navigate',null)">
+        Find a Safe Hub First
+      </button>
+    </div>
+  </div>
+
+  <!-- Active state -->
+  <div id="guardian-active" style="display:none;">
+    <div class="grid-2-eq">
+      <div class="guardian-widget">
+        <div class="syne" style="font-size:14px;font-weight:700;margin-bottom:4px;">Check-in Timer</div>
+        <div class="sub" style="font-size:11px;margin-bottom:16px;" id="gm-site-label">No site selected</div>
+        <div class="timer-svg-wrap">
+          <svg class="timer-svg" width="160" height="160" viewBox="0 0 160 160">
+            <circle cx="80" cy="80" r="70" fill="none" stroke="var(--bg-el)" stroke-width="8"/>
+            <circle cx="80" cy="80" r="70" fill="none" stroke="var(--green)" stroke-width="8"
+              stroke-dasharray="440" stroke-dashoffset="0" stroke-linecap="round" id="timer-arc"/>
+          </svg>
+          <div class="timer-center">
+            <div class="timer-num" id="web-timer-num">20:00</div>
+            <div class="timer-sub-text">remaining</div>
+          </div>
+        </div>
+        <div class="g-actions" style="margin-top:16px;">
+          <button class="g-safe" onclick="guardianCheckIn()">✓ I'm Safe</button>
+          <button class="g-sos" onclick="triggerSOS()">⚠ Quick SOS</button>
+        </div>
+        <button class="btn btn-o" style="width:100%;justify-content:center;margin-top:10px;font-size:12px;"
+          onclick="stopGuardianMode()">Stop Session</button>
+      </div>
+
+      <div>
+        <div class="panel">
+          <div class="panel-title">Session Details</div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+            <span class="sub">Site</span><span id="gm-session-site" style="font-weight:500;">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+            <span class="sub">AuraScore™</span><span id="gm-session-score" class="green" style="font-weight:700;">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+            <span class="sub">Session started</span><span id="gm-session-start">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+            <span class="sub">Check-in interval</span><span id="gm-session-interval">20 min</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;">
+            <span class="sub">Check-ins completed</span><span id="gm-checkin-count" class="green">0</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Emergency Contacts
+            <button class="btn btn-o btn-sm" onclick="navTo('settings',null)" style="font-size:11px;">Manage</button>
+          </div>
+          <div id="gm-contacts-list">
+            <div class="sub" style="font-size:12px;padding:8px 0;">Loading contacts…</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Auto-Escalation Chain</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg-el);border-radius:8px;font-size:12px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;"></div>
+              <div><strong>Check-in missed</strong> → SMS sent to primary contact with live GPS + AuraScore™</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg-el);border-radius:8px;font-size:12px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--amber);flex-shrink:0;"></div>
+              <div><strong>+5 min no response</strong> → Twilio voice call to primary contact</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg-el);border-radius:8px;font-size:12px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;"></div>
+              <div><strong>+2 min still no response</strong> → Local emergency services notified (if enabled)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- My Activity & Logs -->
+<div class="page" id="page-my-activity">
+  <div class="page-header">
+    <div><div class="page-title">My Activity &amp; Logs</div><div class="page-sub">Full history of Guardian sessions, alerts, and site reports</div></div>
+    <button class="btn btn-o btn-sm" onclick="exportActivityPDF()">Export PDF</button><div class="stat-val green">23</div></div>
+    <div class="stat-card"><div class="stat-lbl">Total Charging Hours</div><div class="stat-val green">18.4h</div></div>
+    <div class="stat-card"><div class="stat-lbl">Escalations</div><div class="stat-val amber">1</div></div>
+    <div class="stat-card"><div class="stat-lbl">Sites Reported</div><div class="stat-val green">12</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Guardian Session Log</div>
+    <table class="tbl">
+      <thead><tr><th>Date &amp; Time</th><th>Site</th><th>Duration</th><th>Check-ins</th><th>Outcome</th><th>AuraScore</th></tr></thead>
+      <tbody id="session-log-body">
+        <tr><td colspan="6" style="text-align:center;color:var(--t3);padding:20px;">Loading sessions…</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Alert History</div>
+    <div class="alert-item urgent" style="margin-bottom:8px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:2px;"><path d="M12 8v4M12 16h.01" stroke="#FF3B3B" stroke-width="2" stroke-linecap="round"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#FF3B3B" stroke-width="1.8"/></svg>
+      <div><div style="font-size:13px;font-weight:600;color:var(--red);">Missed check-in — Guardian escalated</div><div style="font-size:11px;color:var(--t2);margin-top:2px;">Bradley Stoke Lidl · Mar 12, 2026 · 20:27 · Contacts notified via Twilio</div></div>
+    </div>
+    <div class="alert-item warn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="9" stroke="#FFB020" stroke-width="1.8"/><path d="M12 8v4M12 16h.01" stroke="#FFB020" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <div><div style="font-size:13px;font-weight:600;color:var(--amber);">AuraScore drop — Cribbs Causeway (74 → 58)</div><div style="font-size:11px;color:var(--t2);margin-top:2px;">CCTV offline · Mar 20, 2026 · 22:03</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Submit Site Audit -->
+<div class="page" id="page-audit">
+  <div class="page-header">
+    <div><div class="page-title">Submit Site Audit</div><div class="page-sub">Help improve AuraScore™ accuracy with ground-level data</div></div>
+  </div>
+  <div class="grid-2-eq">
+    <div class="panel">
+      <div class="panel-title">Site Details</div>
+      <div class="form-group"><label class="form-label">Charging site name</label><input class="input" type="text" placeholder="e.g. Aztec West Retail Park"></div>
+      <div class="form-group"><label class="form-label">Your current location</label><input class="input" type="text" placeholder="Auto-detected or enter postcode"></div>
+      <div class="form-group"><label class="form-label">Visit date &amp; time</label><input class="input" type="datetime-local"></div>
+      <div class="divider"></div>
+      <div class="panel-title" style="font-size:13px;">Visual Security</div>
+      <div class="form-group"><label class="form-label">CCTV cameras visible?</label><select class="input"><option>Yes — clearly visible</option><option>Yes — partially visible</option><option>No cameras visible</option></select></div>
+      <div class="form-group"><label class="form-label">Emergency help button present?</label><select class="input"><option>Yes</option><option>No</option><option>Not sure</option></select></div>
+      <div class="divider"></div>
+      <div class="panel-title" style="font-size:13px;">Illumination</div>
+      <div class="form-group"><label class="form-label">Lighting quality at charging area</label><select class="input"><option>Bright — well lit</option><option>Moderate</option><option>Dim</option><option>Dark</option></select></div>
+      <div class="form-group"><label class="form-label">Any lights broken or flickering?</label><select class="input"><option>No</option><option>Yes — 1-2 broken</option><option>Yes — multiple broken</option></select></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title" style="font-size:13px;">Human Presence</div>
+      <div class="form-group"><label class="form-label">Foot traffic level</label><select class="input"><option>High — many people around</option><option>Moderate</option><option>Low</option><option>Isolated — no one nearby</option></select></div>
+      <div class="form-group"><label class="form-label">Nearby 24/7 staffed premises?</label><select class="input"><option>Yes — within 50m</option><option>Yes — within 200m</option><option>No</option></select></div>
+      <div class="divider"></div>
+      <div class="panel-title" style="font-size:13px;">Environmental Design</div>
+      <div class="form-group"><label class="form-label">Open sightlines / visibility?</label><select class="input"><option>Excellent — open space</option><option>Good</option><option>Obstructed</option></select></div>
+      <div class="form-group"><label class="form-label">Hidden alcoves or blind spots?</label><select class="input"><option>No</option><option>Yes — minor</option><option>Yes — significant</option></select></div>
+      <div class="divider"></div>
+      <div class="form-group"><label class="form-label">Additional notes</label><textarea class="input" rows="3" placeholder="Any other observations about this site's safety..."></textarea></div>
+      <div style="background:var(--gd);border:1px solid var(--gb);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--green);margin-bottom:14px;">
+        Your submission is anonymised. No personal data is attached to this report. GDPR compliant.
+      </div>
+      <button class="btn btn-g btn-lg" style="width:100%;justify-content:center;" onclick="submitAuditForm()">Submit Audit Report →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Alerts -->
+<div class="page" id="page-alerts-page">
+  <div class="page-header">
+    <div><div class="page-title">Alerts</div><div class="page-sub">Real-time safety notifications for your area</div></div>
+    <button class="btn btn-o btn-sm" onclick="markAllAlertsRead()">Mark all read</button>
+  </div>
+  <div class="alert-item urgent"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:2px;"><path d="M12 8v4M12 16h.01" stroke="#FF3B3B" stroke-width="2" stroke-linecap="round"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#FF3B3B" stroke-width="1.8"/></svg><div><div style="font-size:13px;font-weight:700;color:var(--red);">URGENT: Missed check-in — Guardian escalated</div><div style="font-size:12px;color:var(--t2);margin-top:3px;">Aztec West · Today 22:14 · Contacts notified</div></div></div>
+  <div class="alert-item warn" style="margin-top:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="9" stroke="#FFB020" stroke-width="1.8"/><path d="M12 8v4M12 16h.01" stroke="#FFB020" stroke-width="1.8" stroke-linecap="round"/></svg><div><div style="font-size:13px;font-weight:700;color:var(--amber);">AuraScore drop — CCTV offline</div><div style="font-size:12px;color:var(--t2);margin-top:3px;">Cribbs Causeway Tesla · 74 → 58 · Mar 20 · 22:03</div></div></div>
+  <div class="alert-item ok" style="margin-top:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:2px;"><path d="M9 12l2 2 4-4" stroke="#00E87A" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#00E87A" stroke-width="1.8"/></svg><div><div style="font-size:13px;font-weight:700;color:var(--green);">New Aura-Verified hub nearby</div><div style="font-size:12px;color:var(--t2);margin-top:3px;">Bradley Stoke Lidl · Score: 91 · Mar 17 · 11:05</div></div></div>
+  <div class="alert-item info" style="margin-top:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="9" stroke="#8A95B0" stroke-width="1.8"/><path d="M12 8h.01M12 12v4" stroke="#8A95B0" stroke-width="1.8" stroke-linecap="round"/></svg><div><div style="font-size:13px;font-weight:700;">Guardian session completed</div><div style="font-size:12px;color:var(--t2);margin-top:3px;">Aztec West Retail Park · 45 min · Mar 18 · 09:12</div></div></div>
+</div>
+
+<!-- Settings -->
+<div class="page" id="page-settings">
+  <div class="page-header"><div><div class="page-title">Settings</div><div class="page-sub">Account, privacy, and Guardian preferences</div></div></div>
+  <div class="grid-2-eq">
+    <div class="panel"><div class="panel-title">Account</div>
+      <div class="form-group"><label class="form-label">Display name</label><input class="input" type="text" id="settings-name" value="Joshua Odejayi"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="input" type="email" value="joshua@auracharge.co.uk"></div>
+      <div class="form-group"><label class="form-label">Mobile</label><input class="input" type="tel" value="+44 7700 000000"></div>
+      <button class="btn btn-g btn-sm" onclick="saveSettings()">Save Changes</button>
+    </div>
+    <div class="panel"><div class="panel-title">Guardian Defaults</div>
+      <div class="form-group"><label class="form-label">Default check-in timer</label><select class="input"><option>10 min</option><option selected>20 min</option><option>30 min</option></select></div>
+      <div class="form-group"><label class="form-label">Auto-escalation after missed check-in</label><select class="input"><option>2 min</option><option selected>5 min</option><option>10 min</option></select></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border);"><div><div style="font-size:13px;font-weight:500;">Auto-enable at charging locations</div><div class="sub" style="font-size:11px;">Activates Guardian when you arrive</div></div><button class="toggle on"></button></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border);"><div><div style="font-size:13px;font-weight:500;">Notify emergency services</div><div class="sub" style="font-size:11px;">After 2 additional missed mins</div></div><button class="toggle on"></button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CPO PAGES ══ -->
+
+<!-- CPO Overview -->
+<div class="page" id="page-cpo-overview">
+  <div class="page-header">
+    <div><div class="page-title">Operator Overview</div><div class="page-sub">Your network performance · Live AuraScore™ intelligence</div></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-o btn-sm" onclick="exportCPOReport()">Export PDF</button>
+      <button class="btn btn-g btn-sm" onclick="showAddSiteModal()">+ Add Site</button>
+    </div>
+  </div>
+  <div class="grid-4">
+    <div class="stat-card"><div class="stat-lbl">My Sites</div><div class="stat-val green">12</div><div class="stat-delta green">3 recently audited</div></div>
+    <div class="stat-card"><div class="stat-lbl">Network Avg. AuraScore</div><div class="stat-val amber">71</div><div class="stat-delta amber">↓ 3 vs last month</div></div>
+    <div class="stat-card"><div class="stat-lbl">PAS 1899 Compliant</div><div class="stat-val green">10/12</div><div class="stat-delta green">83% compliant</div></div>
+    <div class="stat-card"><div class="stat-lbl">Incidents (30d)</div><div class="stat-val" style="color:var(--t1);">4</div><div class="stat-delta green">↓ from 9</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">Site Performance Summary</div>
+      <table class="tbl">
+        <thead><tr><th>Site</th><th>AuraScore™</th><th>PAS 1899</th><th>CCTV</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:500;">Aztec West Retail</td><td><span class="green syne" style="font-weight:700;">88</span></td><td><span class="badge badge-g">Pass</span></td><td><span class="badge badge-g">Active</span></td><td><span class="badge badge-g">Verified</span></td></tr>
+          <tr><td style="font-weight:500;">Bradley Stoke Lidl</td><td><span class="green syne" style="font-weight:700;">91</span></td><td><span class="badge badge-g">Pass</span></td><td><span class="badge badge-g">Active</span></td><td><span class="badge badge-g">Verified</span></td></tr>
+          <tr><td style="font-weight:500;">Cribbs Causeway Tesla</td><td><span class="amber syne" style="font-weight:700;">74</span></td><td><span class="badge badge-a">Review</span></td><td><span class="badge badge-a">Partial</span></td><td><span class="badge badge-a">Review</span></td></tr>
+          <tr><td style="font-weight:500;">Gainsborough Retail</td><td><span class="red syne" style="font-weight:700;">48</span></td><td><span class="badge badge-r">Fail</span></td><td><span class="badge badge-r">Offline</span></td><td><span class="badge badge-r">Flagged</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="panel-title">AuraScore™ Pillar Avg — Your Network</div>
+      <div class="pillar-row"><div class="pillar-name">Visual Security</div><div class="pillar-track"><div class="pillar-fill" style="width:81%;background:var(--green);"></div></div><div class="pillar-score green">16.2</div></div>
+      <div class="pillar-row"><div class="pillar-name">Illumination</div><div class="pillar-track"><div class="pillar-fill" style="width:74%;background:var(--green);"></div></div><div class="pillar-score green">14.8</div></div>
+      <div class="pillar-row"><div class="pillar-name">Human Presence</div><div class="pillar-track"><div class="pillar-fill" style="width:70%;background:var(--amber);"></div></div><div class="pillar-score amber">17.5</div></div>
+      <div class="pillar-row"><div class="pillar-name">Env. Design (CPTED)</div><div class="pillar-track"><div class="pillar-fill" style="width:80%;background:var(--green);"></div></div><div class="pillar-score green">16.0</div></div>
+      <div class="pillar-row"><div class="pillar-name">Historical Risk</div><div class="pillar-track"><div class="pillar-fill" style="width:47%;background:var(--amber);"></div></div><div class="pillar-score amber">9.4</div></div>
+      <div class="pillar-row" style="border:none;"><div class="pillar-name">PAS 1899 Compliance</div><div class="pillar-track"><div class="pillar-fill" style="width:90%;background:var(--green);"></div></div><div class="pillar-score green">18.0</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CPO Sites -->
+<div class="page" id="page-cpo-sites">
+  <div class="page-header"><div><div class="page-title">My Sites</div><div class="page-sub">Manage and audit your charging network</div></div><button class="btn btn-g btn-sm">+ Add New Site</button></div>
+  <div class="grid-3">
+    <div class="stat-card"><div class="stat-lbl">Total Sites</div><div class="stat-val green">12</div></div>
+    <div class="stat-card"><div class="stat-lbl">Avg AuraScore</div><div class="stat-val amber">71</div></div>
+    <div class="stat-card"><div class="stat-lbl">Sites Need Action</div><div class="stat-val red">2</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Site Certification Register</div>
+    <table class="tbl">
+      <thead><tr><th>Site Name</th><th>AuraScore™</th><th>PAS 1899</th><th>CCTV</th><th>Last Event</th><th>Status</th></tr></thead>
+      <tbody id="cpo-sites-body">
+        <tr><td colspan="6" style="text-align:center;color:var(--t3);padding:20px;">Loading sites…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- CPO Heatmap -->
+<div class="page" id="page-cpo-heatmap">
+  <div class="page-header"><div><div class="page-title">Safety Heatmaps</div><div class="page-sub">AuraScore™ by time window — identify your vulnerability peaks</div></div>
+    <select class="input" style="width:auto;padding:8px 12px;font-size:13px;"><option>Last 30 days</option><option>Last 7 days</option><option>Last 90 days</option></select>
+  </div>
+  <div class="panel">
+    <div class="panel-title">24-Hour Safety Profile — All Sites Combined</div>
+    <div style="overflow-x:auto;">
+      <div style="display:grid;grid-template-columns:90px repeat(12,1fr);gap:3px;min-width:600px;align-items:center;margin-bottom:8px;">
+        <div class="sub" style="font-size:11px;text-align:right;padding-right:8px;">Time →</div>
+        <div class="sub" style="font-size:10px;text-align:center;">00:00</div><div class="sub" style="font-size:10px;text-align:center;">02:00</div>
+        <div class="sub" style="font-size:10px;text-align:center;">04:00</div><div class="sub" style="font-size:10px;text-align:center;">06:00</div>
+        <div class="sub" style="font-size:10px;text-align:center;">08:00</div><div class="sub" style="font-size:10px;text-align:center;">10:00</div>
+        <div class="sub" style="font-size:10px;text-align:center;">12:00</div><div class="sub" style="font-size:10px;text-align:center;">14:00</div>
+        <div class="sub" style="font-size:10px;text-align:center;">16:00</div><div class="sub" style="font-size:10px;text-align:center;">18:00</div>
+        <div class="sub" style="font-size:10px;text-align:center;">20:00</div><div class="sub" style="font-size:10px;text-align:center;">22:00</div>
+      </div>
+      <div id="heatmap-rows"></div>
+    </div>
+    <div style="display:flex;gap:20px;font-size:11px;margin-top:12px;flex-wrap:wrap;">
+      <span class="green">● ≥70 Safe</span><span class="amber">● 50–69 Caution</span><span class="red">● &lt;50 Avoid at night</span>
+      <span class="sub" style="margin-left:auto;">AuraScore™ is updated dynamically via Police.uk + CCTV feeds</span>
+    </div>
+  </div>
+</div>
+
+<!-- CPO Guardian Events — GDPR Clean -->
+<div class="page" id="page-cpo-guardian">
+  <div class="page-header">
+    <div><div class="page-title">Guardian Events</div><div class="page-sub">Anonymised site-level events. No personal data displayed in accordance with UK GDPR.</div></div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span class="badge badge-g" style="font-size:12px;padding:6px 12px;">All Clear · Now</span>
+      <button class="btn btn-o btn-sm" onclick="exportAnonymisedLog()">Export (Anonymised)</button>
+    </div>
+  </div>
+  <div class="grid-4">
+    <div class="stat-card"><div class="stat-lbl">Active Sessions Now</div><div class="stat-val green">34</div><div class="stat-delta green">Across your sites</div></div>
+    <div class="stat-card"><div class="stat-lbl">SOS Events (7d)</div><div class="stat-val" style="color:var(--t1);">3</div><div class="stat-delta green">All resolved</div></div>
+    <div class="stat-card"><div class="stat-lbl">Auto-Escalations (7d)</div><div class="stat-val amber">7</div><div class="stat-delta" style="color:var(--t2);">All resolved</div></div>
+    <div class="stat-card"><div class="stat-lbl">Avg. Session Length</div><div class="stat-val green">28m</div><div class="stat-delta green">↑ from 22m</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">
+      Site-Level Guardian Event Log
+      <span class="badge badge-m" style="font-size:11px;">🔒 User identities not stored or displayed — UK GDPR Art. 5(1)(c)</span>
+    </div>
+    <table class="tbl">
+      <thead><tr><th>Time</th><th>Site</th><th>AuraScore at Event</th><th>Event Type</th><th>Resolution</th><th>Duration</th></tr></thead>
+      <tbody id="cpo-guardian-body">
+        <tr><td colspan="6" style="text-align:center;color:var(--t3);padding:20px;">Loading events…</td></tr>
+      </tbody>
+    </table>
+    <div style="background:var(--bd);border:1px solid #4A8EFF33;border-radius:10px;padding:11px 14px;margin-top:14px;font-size:12px;color:var(--blue);display:flex;gap:8px;align-items:flex-start;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="9" stroke="#4A8EFF" stroke-width="1.8"/><path d="M12 8h.01M12 12v4" stroke="#4A8EFF" stroke-width="1.8" stroke-linecap="round"/></svg>
+      This log shows only site-level events and outcomes. Driver identity, contact details, and personal location history are never accessible to CPOs, in compliance with UK GDPR Article 5(1)(c) — data minimisation principle.
+    </div>
+  </div>
+</div>
+
+<!-- CPO Reports -->
+<div class="page" id="page-cpo-reports">
+  <div class="page-header"><div><div class="page-title">Audit Reports</div><div class="page-sub">Downloadable compliance documentation for your sites</div></div>
+    <button class="btn btn-g btn-sm" onclick="generateReport()">Generate New Report</button>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Available Reports</div>
+    <table class="tbl">
+      <thead><tr><th>Report</th><th>Sites Covered</th><th>Generated</th><th>Format</th><th></th></tr></thead>
+      <tbody>
+        <tr><td style="font-weight:500;">Q1 2026 Safety Compliance Report</td><td class="sub">All 12 sites</td><td class="sub">01 Apr 2026</td><td><span class="badge badge-m">PDF</span></td><td><button class="btn btn-o btn-sm">Download</button></td></tr>
+        <tr><td style="font-weight:500;">PAS 1899 Audit — Aztec West</td><td class="sub">Aztec West Retail</td><td class="sub">15 Mar 2026</td><td><span class="badge badge-m">PDF</span></td><td><button class="btn btn-o btn-sm">Download</button></td></tr>
+        <tr><td style="font-weight:500;">AuraScore Trend Report — Feb 2026</td><td class="sub">All 12 sites</td><td class="sub">01 Mar 2026</td><td><span class="badge badge-m">PDF</span></td><td><button class="btn btn-o btn-sm">Download</button></td></tr>
+        <tr><td style="font-weight:500;">Incident Log — March 2026</td><td class="sub">All 12 sites</td><td class="sub">01 Apr 2026</td><td><span class="badge badge-m">CSV</span></td><td><button class="btn btn-o btn-sm">Download</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- end main-content -->
+</div><!-- end app-body -->
+</div><!-- end app-layer -->
+
+<!-- ── SITE DETAIL MODAL ── -->
+<div id="site-modal-overlay" onclick="closeSiteDetail()" style="display:none;position:fixed;inset:0;background:#00000090;z-index:500;backdrop-filter:blur(6px);"></div>
+<div id="site-modal" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:640px;background:var(--bg-card);border-radius:24px 24px 0 0;
+  border:1px solid var(--border2);border-bottom:none;z-index:501;max-height:92vh;
+  overflow-y:auto;flex-direction:column;">
+
+  <!-- Drag handle -->
+  <div style="display:flex;justify-content:center;padding:12px 0 0;">
+    <div style="width:40px;height:4px;background:var(--border2);border-radius:2px;"></div>
+  </div>
+
+  <!-- Hero band -->
+  <div id="sm-hero" style="padding:20px 20px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;">
+    <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
+      <!-- Back -->
+      <div onclick="closeSiteDetail()" style="width:34px;height:34px;border-radius:10px;
+        background:var(--bg-card2);border:1px solid var(--border);flex-shrink:0;
+        display:flex;align-items:center;justify-content:center;cursor:pointer;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M19 12H5M12 5l-7 7 7 7" stroke="#8A95B0" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <!-- Site icon -->
+      <div id="sm-icon-wrap" style="width:52px;height:52px;border-radius:14px;flex-shrink:0;
+        display:flex;align-items:center;justify-content:center;background:var(--gd);border:1px solid var(--gb);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <rect x="4" y="3" width="12" height="18" rx="2" fill="none" stroke="#00E87A" stroke-width="1.4"/>
+          <circle cx="19" cy="17" r="3" fill="none" stroke="#00E87A" stroke-width="1.4"/>
+          <path d="M7 8h6M7 12h4" stroke="#00E87A" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div style="min-width:0;">
+        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="sm-name">—</div>
+        <div style="font-size:12px;color:var(--t2);margin-top:2px;" id="sm-address">—</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:1px;" id="sm-postcode"></div>
+      </div>
+    </div>
+    <!-- AuraScore badge -->
+    <div id="sm-score-badge" style="background:var(--gd);border:1px solid var(--gb);
+      border-radius:14px;padding:10px 14px;text-align:center;flex-shrink:0;min-width:80px;">
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;
+        line-height:1;color:var(--green);" id="sm-score-num">—</div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:.5px;
+        color:var(--green);margin-top:2px;">AURASCORE™</div>
+      <div style="font-size:10px;color:var(--t2);margin-top:3px;" id="sm-safe-label">—</div>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div id="sm-status-bar" style="margin:0 20px 14px;padding:10px 14px;border-radius:10px;
+    background:var(--gd);border:1px solid var(--gb);font-size:12px;font-weight:600;
+    color:var(--green);display:flex;align-items:center;gap:8px;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2L3 6v7c0 5.25 3.75 10.15 9 11.35C17.25 23.15 21 18.25 21 13V6L12 2Z"
+        fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+    <span id="sm-aura-desc-short">—</span>
+  </div>
+
+  <!-- Tags row -->
+  <div id="sm-tags" style="display:flex;gap:6px;flex-wrap:wrap;padding:0 20px 14px;"></div>
+
+  <!-- Divider -->
+  <div style="height:1px;background:var(--border);margin:0 20px 16px;"></div>
+
+  <!-- AuraScore Breakdown -->
+  <div style="padding:0 20px;">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;
+      letter-spacing:.8px;color:var(--t3);margin-bottom:14px;">AuraScore™ Breakdown</div>
+    <div id="sm-pillars"></div>
+  </div>
+
+  <!-- Divider -->
+  <div style="height:1px;background:var(--border);margin:16px 20px;"></div>
+
+  <!-- Meta row -->
+  <div style="display:flex;align-items:center;justify-content:space-between;
+    padding:0 20px;margin-bottom:16px;font-size:12px;color:var(--t3);">
+    <span id="sm-source">—</span>
+    <span id="sm-operator">—</span>
+    <span id="sm-audit-date">—</span>
+  </div>
+
+  <!-- CTA buttons - 3 actions per site -->
+  <div style="display:flex;flex-direction:column;gap:10px;padding:0 20px 28px;">
+    <!-- Primary: Navigate AuraPath -->
+    <button id="sm-route-btn" class="btn btn-g"
+      style="justify-content:center;padding:15px;font-size:14px;border-radius:12px;font-family:'Syne',sans-serif;font-weight:700;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke="#0A0D12" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Navigate AuraPath →
+    </button>
+    <!-- Secondary row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <button id="sm-guardian-btn" class="btn btn-o"
+        style="justify-content:center;padding:13px;font-size:13px;border-radius:12px;border-color:var(--gb);color:var(--green);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M12 2L3 6v7c0 5.25 3.75 10.15 9 11.35C17.25 23.15 21 18.25 21 13V6L12 2Z"
+            fill="none" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        Guardian Mode
+      </button>
+      <button id="sm-audit-btn" class="btn btn-o"
+        style="justify-content:center;padding:13px;font-size:13px;border-radius:12px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M9 11l3 3 8-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h9" stroke="currentColor" stroke-width="1.8"/>
+        </svg>
+        Audit This Site
+      </button>
+    </div>
+    <button onclick="closeSiteDetail()" class="btn btn-o"
+      style="justify-content:center;padding:11px;font-size:12px;border-radius:10px;color:var(--t3);">
+      Close
+    </button>
+  </div>
+</div>
+
+<!-- ── AURAPATH NAVIGATION MODAL ── -->
+<div id="aurapath-overlay" onclick="closeAuraPath()" style="display:none;position:fixed;inset:0;background:#00000090;z-index:600;backdrop-filter:blur(6px);"></div>
+<div id="aurapath-modal" style="display:none;position:fixed;inset:0;z-index:601;display:none;align-items:flex-end;justify-content:center;pointer-events:none;">
+  <div style="width:100%;max-width:680px;background:var(--bg-card);border-radius:24px 24px 0 0;
+    border:1px solid var(--border2);border-bottom:none;max-height:95vh;overflow-y:auto;
+    pointer-events:all;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,1,.32,1);"
+    id="aurapath-sheet">
+
+    <!-- Handle -->
+    <div style="display:flex;justify-content:center;padding:12px 0 4px;">
+      <div style="width:40px;height:4px;background:var(--border2);border-radius:2px;"></div>
+    </div>
+
+    <!-- Header -->
+    <div style="padding:16px 20px 12px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--gd);border:1px solid var(--gb);
+            display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#00E87A" stroke-width="1.8"/>
+              <circle cx="12" cy="9" r="2.5" stroke="#00E87A" stroke-width="1.8"/>
+            </svg>
+          </div>
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;">Navigate AuraPath</div>
+            <div style="font-size:12px;color:var(--t2);" id="ap-dest-name">Select destination</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div id="ap-score-chip" style="background:var(--gd);border:1px solid var(--gb);border-radius:8px;
+            padding:5px 10px;text-align:center;">
+            <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--green);" id="ap-score">—</div>
+            <div style="font-size:8px;color:var(--green);font-weight:600;">AURA</div>
+          </div>
+          <div onclick="closeAuraPath()" style="cursor:pointer;width:28px;height:28px;border-radius:8px;
+            background:var(--bg-card2);display:flex;align-items:center;justify-content:center;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="#8A95B0" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- In-App Map Preview -->
+    <div id="ap-map-container" style="height:220px;background:var(--bg-el);position:relative;overflow:hidden;margin:0;">
+      <!-- Map grid background -->
+      <div style="position:absolute;inset:0;opacity:.3;
+        background:repeating-linear-gradient(0deg,transparent,transparent 29px,var(--border) 30px),
+                   repeating-linear-gradient(90deg,transparent,transparent 29px,var(--border) 30px);">
+      </div>
+      <!-- Route line (SVG) -->
+      <svg style="position:absolute;inset:0;width:100%;height:100%;" id="ap-route-svg">
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#00E87A"/>
+          </marker>
+        </defs>
+        <!-- Animated route path -->
+        <path id="ap-route-path"
+          d="M 60 190 C 80 160, 120 140, 160 120 C 200 100, 260 90, 320 80 C 360 72, 400 68, 440 60"
+          fill="none" stroke="#00E87A" stroke-width="3" stroke-dasharray="8 4"
+          marker-end="url(#arrowhead)" opacity=".8"/>
+        <!-- Origin dot -->
+        <circle cx="60" cy="190" r="8" fill="#4A8EFF" stroke="#fff" stroke-width="2"/>
+        <circle cx="60" cy="190" r="16" fill="#4A8EFF" fill-opacity=".2"/>
+        <!-- Destination pin -->
+        <circle id="ap-dest-dot" cx="440" cy="60" r="10" fill="#00E87A" stroke="#fff" stroke-width="2.5"/>
+        <circle id="ap-dest-pulse" cx="440" cy="60" r="20" fill="#00E87A" fill-opacity=".2"/>
+      </svg>
+      <!-- Labels -->
+      <div style="position:absolute;bottom:10px;left:14px;background:#000000BB;border:1px solid var(--border);
+        border-radius:7px;padding:5px 9px;font-size:11px;color:var(--blue);">📍 Your location</div>
+      <div style="position:absolute;top:8px;right:12px;background:#000000BB;border:1px solid var(--gb);
+        border-radius:7px;padding:5px 9px;font-size:11px;color:var(--green);" id="ap-dest-label">Destination</div>
+      <!-- Distance / ETA bar -->
+      <div style="position:absolute;bottom:10px;right:12px;background:var(--bg-card);border:1px solid var(--border2);
+        border-radius:8px;padding:6px 12px;display:flex;gap:14px;font-size:11px;">
+        <div><div style="color:var(--t3);">Distance</div><div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--t1);" id="ap-distance">Calculating…</div></div>
+        <div style="width:1px;background:var(--border);"></div>
+        <div><div style="color:var(--t3);">ETA</div><div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--t1);" id="ap-eta">—</div></div>
+        <div style="width:1px;background:var(--border);"></div>
+        <div><div style="color:var(--t3);">Safety</div><div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--green);" id="ap-safety-label">—</div></div>
+      </div>
+    </div>
+
+    <!-- Navigation Provider Selection -->
+    <div style="padding:16px 20px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+        color:var(--t3);margin-bottom:12px;">Choose navigation provider</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+
+        <!-- AuraPath In-App -->
+        <div class="nav-provider-card selected" id="nav-aurapath" onclick="selectNavProvider('aurapath')">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--gd);border:1px solid var(--gb);
+            display:flex;align-items:center;justify-content:center;margin:0 auto 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L3 6v7c0 5.25 3.75 10.15 9 11.35C17.25 23.15 21 18.25 21 13V6L12 2Z"
+                stroke="#00E87A" stroke-width="1.8" fill="var(--gd)"/>
+            </svg>
+          </div>
+          <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-align:center;">AuraPath</div>
+          <div style="font-size:10px;color:var(--t2);text-align:center;margin-top:2px;">In-app · Safety-first</div>
+          <div style="font-size:9px;color:var(--green);text-align:center;margin-top:3px;font-weight:600;">✓ Recommended</div>
+        </div>
+
+        <!-- Google Maps -->
+        <div class="nav-provider-card" id="nav-google" onclick="selectNavProvider('google')">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--bg-el);
+            display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px;">🗺</div>
+          <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-align:center;">Google Maps</div>
+          <div style="font-size:10px;color:var(--t2);text-align:center;margin-top:2px;">External app</div>
+          <div style="font-size:9px;color:var(--t3);text-align:center;margin-top:3px;">Standard routing</div>
+        </div>
+
+        <!-- Waze -->
+        <div class="nav-provider-card" id="nav-waze" onclick="selectNavProvider('waze')">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--bg-el);
+            display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px;">🚗</div>
+          <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-align:center;">Waze</div>
+          <div style="font-size:10px;color:var(--t2);text-align:center;margin-top:2px;">External app</div>
+          <div style="font-size:9px;color:var(--t3);text-align:center;margin-top:3px;">Traffic-aware</div>
+        </div>
+      </div>
+
+      <!-- OEM Future Partners notice -->
+      <div style="background:var(--bd);border:1px solid #4A8EFF33;border-radius:10px;padding:10px 12px;
+        font-size:11px;color:var(--blue);display:flex;gap:8px;align-items:flex-start;margin-bottom:16px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px;">
+          <circle cx="12" cy="12" r="9" stroke="#4A8EFF" stroke-width="1.8"/>
+          <path d="M12 8h.01M12 12v4" stroke="#4A8EFF" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span>AuraPath is built to integrate with vehicle navigation systems. Future OEM partners will access this routing layer directly via the AuraCharge Navigation API.</span>
+      </div>
+
+      <!-- Navigate button -->
+      <button id="ap-go-btn" onclick="launchNavigation()"
+        style="width:100%;padding:16px;border-radius:12px;border:none;background:var(--green);
+          color:#0A0D12;font-size:15px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;
+          display:flex;align-items:center;justify-content:center;gap:8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#0A0D12" stroke-width="2" fill="none"/>
+          <circle cx="12" cy="9" r="2.5" stroke="#0A0D12" stroke-width="2"/>
+        </svg>
+        <span id="ap-go-label">Navigate with AuraPath</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+.nav-provider-card{
+  background:var(--bg-card2);border:1.5px solid var(--border);border-radius:12px;
+  padding:14px 8px;cursor:pointer;transition:all .15s;
+}
+.nav-provider-card:hover{border-color:var(--border2);}
+.nav-provider-card.selected{border-color:var(--green);background:var(--gd);}
+#aurapath-modal{display:flex!important;}
+#aurapath-modal.hidden{display:none!important;}
+@keyframes pulse-dest{0%,100%{r:20;opacity:.2;}50%{r:26;opacity:.1;}}
+#ap-dest-pulse{animation:pulse-dest 2s ease infinite;}
+@keyframes dash-move{to{stroke-dashoffset:-24;}}
+#ap-route-path{animation:dash-move 1s linear infinite;}
+</style>
+
+<script>
+var currentRole='driver';
+var selectedRole='driver';
+
+function setAuthMode(m){
+  document.getElementById('tab-login').classList.toggle('active',m==='login');
+  document.getElementById('tab-signup').classList.toggle('active',m==='signup');
+  document.getElementById('auth-login').classList.toggle('hide',m!=='login');
+  document.getElementById('auth-signup').classList.toggle('hide',m!=='signup');
+}
+
+function selectRole(r){
+  selectedRole=r;
+  document.getElementById('role-driver').classList.toggle('selected',r==='driver');
+  document.getElementById('role-cpo').classList.toggle('selected',r==='cpo');
+}
+
+function doLogin(){
+  var email=document.getElementById('login-email').value||'demo@auracharge.co.uk';
+  if(selectedRole==='cpo'){showCPOGate();return;}
+  launchApp('driver',email);
+}
+
+function doSignup(){
+  var name=document.getElementById('su-name').value||'New User';
+  var role=document.getElementById('su-role').value;
+  var email=document.getElementById('su-email').value||'user@auracharge.co.uk';
+  if(role==='cpo'){showCPOGate();return;}
+  launchApp('driver',email,name);
+}
+
+function showCPOGate(){
+  document.getElementById('auth-layer').style.display='none';
+  document.getElementById('cpo-gate').classList.add('active');
+}
+
+function showAuth(){
+  document.getElementById('cpo-gate').classList.remove('active');
+  document.getElementById('auth-layer').style.display='flex';
+}
+
+function doCPOLogin(){
+  var email=document.getElementById('cpo-email').value||'operator@cpo.co.uk';
+  launchApp('cpo',email);
+}
+
+function launchApp(role,email,name){
+  currentRole=role;
+  document.getElementById('auth-layer').style.display='none';
+  document.getElementById('cpo-gate').classList.remove('active');
+  var app=document.getElementById('app-layer');
+  app.classList.add('active');
+
+  // Set initials
+  var parts=(name||email||'User').split(' ');
+  var initials=(parts[0][0]+(parts[1]?parts[1][0]:'')).toUpperCase();
+  document.getElementById('av-initials').textContent=initials;
+  document.getElementById('display-name').textContent=name||(email.split('@')[0]);
+  document.getElementById('greeting-name').textContent=name?name.split(' ')[0]:'Joshua';
+
+  // Role UI switch
+  if(role==='cpo'){
+    document.getElementById('role-display').textContent='CPO';
+    document.getElementById('role-display').className='role-badge badge-a';
+    document.getElementById('driver-top-nav').classList.add('hide');
+    document.getElementById('cpo-top-nav').classList.remove('hide');
+    document.getElementById('driver-sidebar').classList.add('hide');
+    document.getElementById('cpo-sidebar').classList.remove('hide');
+    navTo('cpo-overview',null);
+    buildHeatmap();
+  } else {
+    document.getElementById('role-display').textContent='Driver';
+    document.getElementById('role-display').className='role-badge badge-g';
+    navTo('overview',null);
+    loadOverviewSites();
+    showMobileNav('driver'); // show bottom nav on mobile
+  }
+
+  // Start guardian timer
+  startTimer();
+}
+
+function doLogout(){
+  document.getElementById('app-layer').classList.remove('active');
+  document.getElementById('auth-layer').style.display='flex';
+  document.getElementById('login-email').value='';
+  document.getElementById('login-pw').value='';
+  if(timerInterval) clearInterval(timerInterval);
+}
+
+// Navigation
+function navTo(pageId, topBtn, sideBtn){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  var p=document.getElementById('page-'+pageId);
+  if(p){p.classList.add('active');}
+
+  if(topBtn){
+    var nav=currentRole==='cpo'?document.getElementById('cpo-top-nav'):document.getElementById('driver-top-nav');
+    nav.querySelectorAll('.top-nav-btn').forEach(function(b){b.classList.remove('active');});
+    topBtn.classList.add('active');
+  }
+  var sidebar=currentRole==='cpo'?document.getElementById('cpo-sidebar'):document.getElementById('driver-sidebar');
+  if(sideBtn){
+    sidebar.querySelectorAll('.sidebar-item').forEach(function(s){s.classList.remove('active');});
+    sideBtn.classList.add('active');
+  }
+
+  // ── Load live data on page switch ──
+  if(pageId==='navigate')      loadSites();
+  if(pageId==='my-activity')   loadSessionLog();
+  if(pageId==='cpo-overview')  { loadCPOStats(); }
+  if(pageId==='cpo-sites')     loadCPOStats();
+  if(pageId==='cpo-guardian')  loadCPOGuardianLog();
+  if(pageId==='cpo-heatmap')   buildHeatmap();
+  if(pageId==='guardian-page'){
+    // Show correct state based on whether session is active
+    var inactive = document.getElementById('guardian-inactive');
+    var active   = document.getElementById('guardian-active');
+    if(inactive && active){
+      inactive.style.display = guardianSession.active ? 'none' : 'block';
+      active.style.display   = guardianSession.active ? 'block' : 'none';
+    }
+    // Load contacts count for inactive state
+    if(currentUser && !guardianSession.active){
+      var cnt = (currentUser.Emergency_Contact_Name) ? '1' : '0';
+      setEl('gm-contact-count', cnt);
+      setEl('gm-interval-display', (guardianSession.intervalMins||20)+' min');
+    }
+    if(guardianSession.active) startTimer();
+  }
+}
+
+// Notification
+function toggleNotif(){
+  var panel=document.getElementById('notif-panel');
+  panel.classList.toggle('open');
+}
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.notif-btn')&&!e.target.closest('.notif-panel')){
+    document.getElementById('notif-panel').classList.remove('open');
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// AURACHARGE AZURE API LAYER
+// Paste your AuraCharge-Query-API HTTP POST URL below once deployed
+// ═══════════════════════════════════════════════════════════════
+var QUERY_API_URL = 'https://prod-47.uksouth.logic.azure.com:443/workflows/c20a860cb5e54ad6b8274404e8d9b043/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=5_DDtD3tZ7Huq6lojfHWESlj4YU4RNMxTThKyF6im60';
+var LIVE = true;
+
+var currentUser = null; // set on login
+var guardianActive = false;
+var guardianSiteData = null;
+
+// ── Core API caller ──────────────────────────────────────────
+// Azure Logic Apps Consumption tier serialises SQL arrays as JSON strings.
+// parseAzure() unwraps any string values that are actually JSON.
+function parseAzure(obj){
+  if(!obj || typeof obj !== 'object') return obj;
+  var result = {};
+  for(var key in obj){
+    var val = obj[key];
+    if(typeof val === 'string' && (val.startsWith('[') || val.startsWith('{'))){
+      try { result[key] = JSON.parse(val); }
+      catch(e){ result[key] = val; }
+    } else {
+      result[key] = val;
+    }
+  }
+  // Azure returns 'sites' as the key for user object in login response — remap it
+  if(result.sites && !result.user && typeof result.sites === 'object' && result.sites.Role){
+    result.user = result.sites;
+    delete result.sites;
+  }
+  return result;
+}
+
+async function apiCall(action, payload){
+  if(!LIVE){
+    console.log('[AuraAPI] Demo mode — action:', action, payload);
+    return getDemoData(action, payload);
+  }
+  try {
+    var res = await fetch(QUERY_API_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({action, ...payload})
+    });
+    var json = await res.json();
+    if(!res.ok) throw new Error(json.message || 'API error '+res.status);
+    return parseAzure(json); // unwrap any string-serialised arrays
+  } catch(err){
+    console.error('[AuraAPI] Error:', err);
+    showToast('Connection issue — using cached data', 'warn');
+    return getDemoData(action, payload);
+  }
+}
+
+// ── Toast notification ───────────────────────────────────────
+function showToast(msg, type){
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;font-family:DM Sans,sans-serif;animation:fadein .3s ease;';
+  t.style.background = type==='ok' ? 'var(--green)' : type==='err' ? 'var(--red)' : '#2A3450';
+  t.style.color = type==='ok' ? '#0A0D12' : '#F0F4FF';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 3500);
+}
+
+// ── Password hashing ─────────────────────────────────────────
+async function hashPassword(plain){
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(plain));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── LOGIN ────────────────────────────────────────────────────
+async function doLogin(){
+  var email = (document.getElementById('login-email').value||'').trim();
+  var pw    = (document.getElementById('login-pw').value||'').trim();
+  if(!email||!pw){showToast('Please enter email and password','warn');return;}
+  if(selectedRole==='cpo'){showCPOGate();return;}
+
+  showToast('Signing in…','');
+  var passwordHash = await hashPassword(pw);
+  var result = await apiCall('login', {email, passwordHash, role: selectedRole});
+
+  if(result && result.success){
+    launchApp(result.user.Role||selectedRole, email, result.user.FullName, result.user);
+  } else {
+    showToast(result.message||'Invalid email or password','err');
+  }
+}
+
+async function doSignup(){
+  var name   = (document.getElementById('su-name').value||'').trim();
+  var email  = (document.getElementById('su-email').value||'').trim();
+  var mobile = (document.getElementById('su-mobile').value||'').trim();
+  var pw     = (document.getElementById('su-pw').value||'').trim();
+  var role   = document.getElementById('su-role').value;
+  if(!name||!email||!pw){showToast('Please fill in all required fields','warn');return;}
+  if(pw.length<8){showToast('Password must be at least 8 characters','warn');return;}
+  if(role==='cpo'){showCPOGate();return;}
+
+  showToast('Creating account…','');
+  var passwordHash = await hashPassword(pw);
+  var result = await apiCall('register', {name, email, mobile, passwordHash, role});
+
+  if(result && result.success){
+    showToast('Account created! Signing you in…','ok');
+    launchApp(role, email, name, {UserID:'new', FullName:name, Email:email, Role:role});
+  } else {
+    showToast(result.message||'Registration failed','err');
+  }
+}
+
+async function doCPOLogin(){
+  var email = (document.getElementById('cpo-email').value||'').trim();
+  var pw    = (document.getElementById('cpo-pw').value||'').trim();
+  if(!email||!pw){showToast('Please enter your operator email and password','warn');return;}
+
+  showToast('Verifying operator credentials…','');
+
+  if(!LIVE){
+    // Demo mode — accept any credentials on the CPO gate
+    showToast('Demo mode — CPO access granted','ok');
+    launchApp('cpo', email, 'CPO Operator', {
+      UserID:'cpo-demo', FullName:'CPO Operator', Email:email, Role:'cpo'
+    });
+    return;
+  }
+
+  var passwordHash = await hashPassword(pw);
+  var result = await apiCall('login', {email, passwordHash, role:'cpo'});
+
+  if(!result || !result.success){
+    showToast(result&&result.message ? result.message : 'Invalid operator credentials','err');
+    return;
+  }
+
+  // Normalise role — handle 'cpo', 'CPO', or operator coming from Aura_CPOs table
+  var userRole = (result.user&&result.user.Role||'').toLowerCase();
+  var isCPO    = userRole === 'cpo'
+              || userRole === 'operator'
+              || result.user.Operator_Id != null
+              || result.user.CPOID != null;
+
+  if(isCPO){
+    var displayName = result.user.FullName
+                   || result.user.Operator_Name
+                   || result.user.CompanyName
+                   || 'CPO Operator';
+    launchApp('cpo', email, displayName, result.user);
+  } else {
+    showToast('This account does not have CPO access. Please use a CPO operator email.','err');
+  }
+}
+
+// ── LOAD SITES (Navigate page) ───────────────────────────────
+async function loadSites(){
+  var container = document.getElementById('hub-list-live');
+  if(!container) return;
+  container.innerHTML = '<div style="padding:20px;color:var(--t3);font-size:13px;">Loading sites…</div>';
+
+  var result = await apiCall('get_sites', {lat:51.52, lng:-2.54, radius:10});
+  var sites = (result && result.sites) ? result.sites : getDemoData('get_sites').sites;
+
+  if(!sites || sites.length===0){
+    container.innerHTML = '<div style="padding:20px;color:var(--t3);font-size:13px;">No sites found.</div>';
+    return;
+  }
+
+  container.innerHTML = '';
+
+  sites = [];
+  sites.sort(function(a,b){ return (b.TotalAuraScore||0)-(a.TotalAuraScore||0); });
+  sites = result.sites && Array.isArray(result.sites) ? result.sites : getDemoData('get_sites').sites;
+  sites.sort(function(a,b){ return (b.TotalAuraScore||0)-(a.TotalAuraScore||0); });
+
+  sites.forEach(function(s){
+    // ── Map real DB columns from Master_AuraCharge_View + SiteAudits ──
+    var score    = Math.round(s.TotalAuraScore || 0);
+    var siteName = s.SiteName || 'Unknown Site';
+    var address  = s.Address || s.SiteAddress || s.Postcode || '';
+    var postcode = (s.Postcode||'').replace(/[\"']/g,'').trim();
+    var safety   = s.SafetyStatus || '';          // "Green" / "Amber" / "Red"
+    var auraSafe = s.AuraSafety   || '';          // "Safe Zone – Recommended..."
+    var source   = s.Source       || '';          // "Manual" / "AI_OCM"
+    var auditId  = s.AuditID      || '';
+
+    // ── Derive safety indicators ──
+    // Azure Logic Apps return numbers as strings — coerce to numeric first
+    var visualScore  = parseFloat(s.Visual_Score_Converted)  || 0;
+    var taskLight    = parseFloat(s.Task_Lighting_Converted)  || 0;
+    var perimLight   = parseFloat(s.Perimeter_Lighting_Score_Converted) || 0;
+    var helpScore    = parseFloat(s.Help_Button_Converted)    || 0;
+    var proxScore    = parseFloat(s.Proximity247_Score_Converted) || 0;
+
+    var cctv     = visualScore > 0;
+    var lighting = taskLight + perimLight;
+    var wellLit  = lighting > 0;
+    var helpBtn  = helpScore > 0;
+    var proximity= proxScore > 0;
+    var crime    = s.HistoricalCrimeReport != null ? parseFloat(s.HistoricalCrimeReport) : null;
+
+    // ── Score colour ──
+    var sc       = score>=80?'sc-g':score>=50?'sc-a':'sc-r';
+    var iconBg   = score>=80?'#0F1E12':score>=50?'#1A1412':'#1A100A';
+    var iconFill = score>=80?'#00E87A12':score>=50?'#FFB02012':'#FF3B3B12';
+    var iconStr  = score>=80?'#00E87A':score>=50?'#FFB020':'#FF3B3B';
+
+    // ── Safety status badge ──
+    var safetyTag = '';
+    if(safety==='Green')  safetyTag = '<span class="tag tg">Safe Zone</span>';
+    else if(safety==='Amber') safetyTag = '<span class="tag ta">Caution</span>';
+    else if(safety==='Red')   safetyTag = '<span class="tag tr">Avoid at Night</span>';
+
+    // ── CCTV tag ──
+    var cctvTag = cctv
+      ? '<span class="tag tg">CCTV</span>'
+      : '<span class="tag tr">No CCTV</span>';
+
+    // ── Lighting tag ──
+    var lightTag = wellLit
+      ? '<span class="tag tg">Well Lit</span>'
+      : lighting > 0
+        ? '<span class="tag ta">Dim Lighting</span>'
+        : '';
+
+    // ── Help button tag ──
+    var helpTag = helpBtn ? '<span class="tag tg">Help Button</span>' : '';
+
+    // ── Proximity tag ──
+    var proxTag = proximity ? '<span class="tag tg">24/7 Nearby</span>' : '';
+
+    // ── Source badge ──
+    var sourceTag = source === 'Manual'
+      ? '<span class="tag tm">Manual Audit</span>'
+      : source === 'AI_OCM' || source === 'OCM'
+        ? '<span class="tag tm">AI Audited</span>'
+        : '';
+
+    // ── Crime tag using AuraCharge non-linear scale ──
+    var crimeTagHtml = crimeTag(crime);
+
+    // ── AuraSafety tooltip (truncated) ──
+    var safeDesc = auraSafe ? auraSafe.substring(0,60)+(auraSafe.length>60?'…':'') : '';
+
+    var safeName = (siteName||'').replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+
+    var div = document.createElement('div');
+    div.className = 'hub-card';
+    div.style.cursor = 'pointer';
+    div.onclick = function(){ openSiteDetail(s); };
+    div.innerHTML = `
+      <div class="hub-icon" style="background:${iconBg};">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <rect x="4" y="3" width="12" height="18" rx="2" fill="${iconFill}" stroke="${iconStr}" stroke-width="1.2"/>
+          <circle cx="19" cy="17" r="3" fill="${iconFill}" stroke="${iconStr}" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="hub-info">
+        <div class="hub-name">${siteName}</div>
+        <div class="hub-meta" style="margin-bottom:4px;">${address}${postcode&&address?' · ':postcode}${postcode}</div>
+        ${safeDesc ? `<div style="font-size:11px;color:var(--t2);margin-bottom:6px;line-height:1.4;">${safeDesc}</div>` : ''}
+        <div class="hub-tags" style="gap:4px;flex-wrap:wrap;">
+          ${safetyTag}${cctvTag}${lightTag}${helpTag}${proxTag}${crimeTagHtml}${sourceTag}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
+        <div class="score-chip ${sc}">
+          <div class="sn">${score||'—'}</div>
+          <div class="sl">Aura</div>
+        </div>
+        <button class="btn btn-g btn-sm"
+          style="width:90px;justify-content:center;"
+          onclick="event.stopPropagation();routeToSite(${s.Latitude||0},${s.Longitude||0},'${(siteName||'').replace(/'/g,'').replace(/"/g,'')}')">
+          🗺 Route
+        </button>
+        <button class="btn btn-o btn-sm"
+          style="width:90px;justify-content:center;"
+          onclick="event.stopPropagation();startGuardianAtSite('${auditId}','${(siteName||'').replace(/'/g,'').replace(/"/g,'')}',${score},${s.Latitude||0},${s.Longitude||0})">
+          ⚡ Guardian
+        </button>
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+// ── LOAD OVERVIEW TOP SITES ───────────────────────────────────
+async function loadOverviewSites(){
+  var result = await apiCall('get_sites', {});
+  var sites = (result && result.sites) ? result.sites : [];
+  if(!Array.isArray(sites) || sites.length===0) return;
+
+  // Sort by score, take top 3
+  sites.sort(function(a,b){ return (b.TotalAuraScore||0)-(a.TotalAuraScore||0); });
+  var top3 = sites.slice(0,3);
+
+  var container = document.getElementById('overview-hub-list');
+  if(!container) return;
+  container.innerHTML='';
+
+  top3.forEach(function(s){
+    var score   = Math.round(s.TotalAuraScore||0);
+    var name    = s.SiteName||'Unknown Site';
+    var address = s.Address||s.Postcode||'';
+    var safety  = s.SafetyStatus||'';
+    var cctv    = (s.Visual_Score_Converted||0)>0;
+    var lit     = (s.Task_Lighting_Converted||0)+(s.Perimeter_Lighting_Score_Converted||0)>0;
+    var sc      = score>=80?'badge-g':score>=50?'badge-a':'badge-r';
+    var safeTag = safety==='Green'?'<span class="tag tg">Safe Zone</span>':
+                  safety==='Amber'?'<span class="tag ta">Caution</span>':
+                  safety==='Red'?'<span class="tag tr">Avoid</span>':'';
+
+    var div = document.createElement('div');
+    div.className='hub-card';
+    div.style.cursor='pointer';
+    div.onclick=function(){ navTo('navigate',null); };
+    div.innerHTML=`
+      <div class="hub-icon" style="background:${score>=80?'#0F1E12':score>=50?'#1A1412':'#1A100A'};">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <rect x="4" y="3" width="12" height="18" rx="2"
+            fill="${score>=80?'#00E87A12':score>=50?'#FFB02012':'#FF3B3B12'}"
+            stroke="${score>=80?'#00E87A':score>=50?'#FFB020':'#FF3B3B'}" stroke-width="1.2"/>
+          <circle cx="19" cy="17" r="3"
+            fill="${score>=80?'#00E87A12':score>=50?'#FFB02012':'#FF3B3B12'}"
+            stroke="${score>=80?'#00E87A':score>=50?'#FFB020':'#FF3B3B'}" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="hub-info">
+        <div class="hub-name">${name}</div>
+        <div class="hub-meta">${address}</div>
+        <div class="hub-tags">
+          ${safeTag}
+          ${cctv?'<span class="tag tg">CCTV</span>':'<span class="tag tr">No CCTV</span>'}
+          ${lit?'<span class="tag tg">Well Lit</span>':''}
+        </div>
+      </div>
+      <div class="score-chip ${score>=80?'sc-g':score>=50?'sc-a':'sc-r'}">
+        <div class="sn">${score||'—'}</div>
+        <div class="sl">Aura</div>
+      </div>`;
+    container.appendChild(div);
+  });
+
+  // Update area stats with real data avg
+  var avgScore = Math.round(sites.slice(0,50).reduce(function(a,s){
+    return a+(s.TotalAuraScore||0);},0)/Math.min(50,sites.length));
+  setEl('overview-avg-score', avgScore||'—');
+  setEl('overview-site-count', sites.length.toLocaleString());
+}
+async function loadSessionLog(){
+  if(!currentUser) return;
+  var result = await apiCall('get_driver_sessions', {userId: currentUser.UserID});
+  var sessions = (result && result.sessions) ? result.sessions : getDemoData('get_driver_sessions').sessions;
+  var tbody = document.getElementById('session-log-body');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  sessions.forEach(function(s){
+    var score = s.AuraScoreAtEvent||s.auraScore||0;
+    var sc = score>=80?'var(--green)':score>=50?'var(--amber)':'var(--red)';
+    var outcome = s.Outcome||s.outcome||'';
+    var badge = outcome.toLowerCase().includes('escalat')?'badge-r':outcome.toLowerCase().includes('complet')?'badge-g':'badge-a';
+    var tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="sub">${formatDate(s.SessionDate||s.date)}</td>
+      <td style="font-weight:500;">${s.SiteName||s.site}</td>
+      <td>${s.DurationMinutes ? s.DurationMinutes+' min' : s.duration||'—'}</td>
+      <td>${s.CheckInsCompleted||0}/${s.CheckInsExpected||1}</td>
+      <td><span class="badge ${badge}">${outcome}</span></td>
+      <td><span style="color:${sc};font-family:'Syne',sans-serif;font-weight:700;">${score}</span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── LOAD CPO STATS ───────────────────────────────────────────
+async function loadCPOStats(){
+  if(!currentUser) return;
+  var result = await apiCall('get_cpo_stats', {userId: currentUser.UserID});
+  var sites = (result && result.sites) ? result.sites : getDemoData('get_cpo_stats').sites;
+  var tbody = document.getElementById('cpo-sites-body');
+  if(!tbody) return;
+  tbody.innerHTML='';
+  var totalScore=0, flagged=0, needAction=0;
+  sites.forEach(function(s){
+    // Map real columns
+    var score   = Math.round(s.TotalAuraScore||s.AuraScore||0);
+    var name    = s.SiteName||'Unknown';
+    var safety  = s.SafetyStatus||'';
+    var source  = s.Source||'';
+    var cctv    = (s.Visual_Score_Converted||0) > 0;
+    var pas     = score >= 80; // derive PAS 1899 from score until CPO table has explicit column
+    totalScore += score;
+    if(score<50) flagged++;
+    if(score<70) needAction++;
+
+    var sc      = score>=80?'var(--green)':score>=50?'var(--amber)':'var(--red)';
+    var pasClass= pas?'badge-g':score<50?'badge-r':'badge-a';
+    var pasLabel= pas?'Compliant':score<50?'Fail':'Review';
+    var cctvClass= cctv?'badge-g':'badge-r';
+    var cctvLabel= cctv?'Active':'None';
+    var statusClass= score>=80?'badge-g':score>=50?'badge-a':'badge-r';
+    var statusLabel= score>=80?'Verified':score>=50?'Review':'Flagged';
+
+    var tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td style="font-weight:500;">${name}</td>
+      <td><span style="color:${sc};font-weight:700;font-family:'Syne',sans-serif;">${score||'—'}</span></td>
+      <td><span class="badge ${pasClass}">${pasLabel}</span></td>
+      <td><span class="badge ${cctvClass}">${cctvLabel}</span></td>
+      <td class="sub">${source}</td>
+      <td><span class="badge ${statusClass}">${statusLabel}</span></td>`;
+    tbody.appendChild(tr);
+  });
+  // Update KPI cards
+  if(sites.length>0){
+    setEl('cpo-kpi-sites', sites.length);
+    setEl('cpo-kpi-avg', Math.round(totalScore/sites.length));
+    setEl('cpo-kpi-compliant', (sites.length-needAction)+'/'+sites.length);
+  }
+}
+
+// ── LOAD CPO GUARDIAN LOG ────────────────────────────────────
+async function loadCPOGuardianLog(){
+  var result = await apiCall('get_guardian_log', {role:'cpo', userId: currentUser ? currentUser.UserID : ''});
+  var log = (result && result.log) ? result.log : getDemoData('get_guardian_log',{role:'cpo'}).log;
+  var tbody = document.getElementById('cpo-guardian-body');
+  if(!tbody) return;
+  tbody.innerHTML='';
+  log.forEach(function(e){
+    var score=e.AuraScoreAtEvent||e.auraScore||0;
+    var sc=score>=80?'var(--green)':score>=50?'var(--amber)':'var(--red)';
+    var evClass=e.EventType&&e.EventType.toLowerCase().includes('sos')?'badge-r':e.EventType&&e.EventType.toLowerCase().includes('ok')?'badge-g':'badge-a';
+    var resClass=e.Resolution&&e.Resolution.toLowerCase().includes('resolv')?'badge-g':'badge-a';
+    var tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="sub">${formatDate(e.EventTime||e.time)}</td>
+      <td style="font-weight:500;">${e.SiteName||e.site}</td>
+      <td><span style="color:${sc};font-weight:700;font-family:'Syne',sans-serif;">${score}</span></td>
+      <td><span class="badge ${evClass}">${e.EventType||e.event}</span></td>
+      <td><span class="badge ${resClass}">${e.Resolution||e.resolution}</span></td>
+      <td class="sub">${e.DurationMinutes ? e.DurationMinutes+' min' : e.duration||'—'}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── SUBMIT AUDIT FORM ────────────────────────────────────────
+async function submitAuditForm(){
+  var auditData = {
+    siteName:        document.querySelector('#page-audit input[type=text]')?.value||'',
+    postcode:        document.querySelectorAll('#page-audit input')[1]?.value||'',
+    visitDateTime:   document.querySelector('#page-audit input[type=datetime-local]')?.value||new Date().toISOString(),
+    cctv:            document.querySelectorAll('#page-audit select')[0]?.value||'',
+    emergencyButton: document.querySelectorAll('#page-audit select')[1]?.value||'',
+    lighting:        document.querySelectorAll('#page-audit select')[2]?.value||'',
+    lightsBroken:    document.querySelectorAll('#page-audit select')[3]?.value||'',
+    footTraffic:     document.querySelectorAll('#page-audit select')[4]?.value||'',
+    nearbyStaffed:   document.querySelectorAll('#page-audit select')[5]?.value||'',
+    sightlines:      document.querySelectorAll('#page-audit select')[6]?.value||'',
+    hiddenAlcoves:   document.querySelectorAll('#page-audit select')[7]?.value||'',
+    notes:           document.querySelector('#page-audit textarea')?.value||'',
+    siteId:          '',
+    source:          'webapp'
+  };
+  if(!auditData.siteName){showToast('Please enter the site name','warn');return;}
+
+  showToast('Submitting audit…','');
+  var result = await apiCall('submit_audit', {auditData});
+  if(result && result.success){
+    showToast('Audit submitted! AuraScore recalculation queued.','ok');
+  } else {
+    showToast('Submission failed — please try again','err');
+  }
+}
+
+// ── GUARDIAN MODE ────────────────────────────────────────────
+var timerSecs = 1200;
+var timerInterval = null;
+
+function startTimer(){
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(function(){
+    timerSecs--;
+    if(timerSecs <= 0){ timerExpired(); return; }
+    var m=Math.floor(timerSecs/60), s=timerSecs%60;
+    var el=document.getElementById('web-timer-num');
+    if(el){
+      el.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+      el.style.color = timerSecs<120 ? 'var(--red)' : timerSecs<300 ? 'var(--amber)' : 'var(--green)';
+    }
+  }, 1000);
+}
+
+function guardianCheckIn(){
+  timerSecs = 1200;
+  var el = document.getElementById('web-timer-num');
+  if(el){ el.style.color='var(--green)'; el.textContent='20:00'; }
+  showToast('Check-in confirmed. Timer reset to 20 minutes.','ok');
+}
+
+function timerExpired(){
+  if(timerInterval) clearInterval(timerInterval);
+  showToast('⚠ Timer expired — escalating to emergency contacts','err');
+  // Log SOS event to database
+  if(currentUser && guardianSiteData){
+    apiCall('trigger_sos', {
+      userId:    currentUser.UserID,
+      siteName:  guardianSiteData.name,
+      auraScore: guardianSiteData.score,
+      lat:       guardianSiteData.lat || 51.52,
+      lng:       guardianSiteData.lng || -2.54
+    });
+  }
+}
+
+async function triggerSOS(){
+  if(!confirm('Confirm: trigger SOS? Your emergency contacts will be notified immediately via Twilio.')) return;
+  showToast('SOS triggered — contacting emergency contacts via Twilio','err');
+  if(currentUser && guardianSiteData){
+    await apiCall('trigger_sos', {
+      userId:    currentUser.UserID,
+      siteName:  guardianSiteData.name,
+      auraScore: guardianSiteData.score,
+      lat:       guardianSiteData.lat||51.52,
+      lng:       guardianSiteData.lng||-2.54
+    });
+  }
+}
+
+function startGuardianAtSite(siteId, siteName, score){
+  guardianSiteData = {id:siteId, name:siteName, score:score};
+  timerSecs = 1200;
+  navTo('guardian-page', null);
+  // Update session info display
+  var siteEl = document.querySelector('#page-guardian-page .sub');
+  if(siteEl) siteEl.textContent = siteName + ' · AuraScore ' + score;
+  startTimer();
+  showToast('Guardian Mode activated at '+siteName,'ok');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GUARDIAN MODE — FULL PIPELINE
+// ═══════════════════════════════════════════════════════════════
+
+var guardianSession = {
+  active:       false,
+  siteId:       null,
+  siteName:     null,
+  siteScore:    null,
+  siteLat:      null,
+  siteLng:      null,
+  startTime:    null,
+  intervalMins: 20,
+  checkIns:     0,
+  escalationTimer: null
+};
+
+// ── Activate Guardian Mode ───────────────────────────────────
+function activateGuardianMode(){
+  // If no site selected, prompt to find one first
+  if(!guardianSession.siteName){
+    showToast('Select a charging site first — use Navigate to find a hub','warn');
+    navTo('navigate', null);
+    return;
+  }
+  startGuardianSession();
+}
+
+function startGuardianAtSite(siteId, siteName, score, lat, lng){
+  guardianSession.siteId   = siteId;
+  guardianSession.siteName = siteName;
+  guardianSession.siteScore= score;
+  guardianSession.siteLat  = lat  || null;
+  guardianSession.siteLng  = lng  || null;
+  navTo('guardian-page', null);
+  startGuardianSession();
+}
+
+function startGuardianSession(){
+  guardianSession.active    = true;
+  guardianSession.startTime = new Date();
+  guardianSession.checkIns  = 0;
+  timerSecs = guardianSession.intervalMins * 60;
+
+  // Update UI to active state
+  document.getElementById('guardian-inactive').style.display = 'none';
+  document.getElementById('guardian-active').style.display   = 'block';
+  document.getElementById('guardian-status-badge').textContent  = 'Active';
+  document.getElementById('guardian-status-badge').style.background = 'var(--gd)';
+  document.getElementById('guardian-status-badge').style.color  = 'var(--green)';
+  document.getElementById('guardian-start-btn').style.display   = 'none';
+
+  // Populate session details
+  setEl('gm-site-label',     (guardianSession.siteName||'Unknown site') + ' · AuraScore™ ' + (guardianSession.siteScore||'—'));
+  setEl('gm-session-site',   guardianSession.siteName||'—');
+  setEl('gm-session-score',  guardianSession.siteScore||'—');
+  setEl('gm-session-start',  new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
+  setEl('gm-session-interval', guardianSession.intervalMins + ' min');
+  setEl('gm-checkin-count',  '0');
+
+  // Load real emergency contacts from DB
+  loadGuardianContacts();
+
+  // Start countdown timer
+  startTimer();
+
+  // Log session start to DB
+  logGuardianEvent('session_started');
+
+  showToast('Guardian Mode activated — check in every '+guardianSession.intervalMins+' minutes','ok');
+}
+
+// ── Load emergency contacts from current user ─────────────────
+function loadGuardianContacts(){
+  var container = document.getElementById('gm-contacts-list');
+  if(!container) return;
+
+  if(!currentUser){
+    container.innerHTML = '<div class="sub" style="font-size:12px;padding:8px 0;">Sign in to load your emergency contacts</div>';
+    return;
+  }
+
+  // Pull from currentUser data returned at login
+  var contactName  = currentUser.Emergency_Contact_Name;
+  var contactPhone = currentUser.Emergency_Phone;
+
+  if(contactName && contactPhone){
+    container.innerHTML =
+      '<div style="padding:8px 0;border-bottom:1px solid var(--border);">'+
+        '<div style="display:flex;align-items:center;gap:8px;">'+
+          '<div style="width:8px;height:8px;border-radius:50%;background:var(--green);"></div>'+
+          '<div style="font-size:13px;font-weight:500;">'+contactName+'</div>'+
+          '<span class="badge badge-g" style="margin-left:auto;">Primary</span>'+
+        '</div>'+
+        '<div class="sub" style="font-size:11px;margin-top:3px;margin-left:16px;">'+contactPhone+' · SMS + Call on escalation</div>'+
+      '</div>'+
+      '<button class="btn btn-o btn-sm" style="margin-top:10px;width:100%;justify-content:center;" onclick="navTo(\'settings\',null)">+ Add More Contacts</button>';
+    setEl('gm-contact-count', '1');
+  } else {
+    container.innerHTML =
+      '<div style="background:var(--ad);border:1px solid var(--ab);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--amber);margin-bottom:8px;">'+
+        '⚠ No emergency contact set. Add one in Settings before activating Guardian Mode.'+
+      '</div>'+
+      '<button class="btn btn-g btn-sm" style="width:100%;justify-content:center;" onclick="navTo(\'settings\',null)">Set Emergency Contact</button>';
+    setEl('gm-contact-count', '0');
+  }
+}
+
+// ── Check In ─────────────────────────────────────────────────
+function guardianCheckIn(){
+  if(!guardianSession.active){
+    showToast('No active Guardian session','warn');
+    return;
+  }
+  guardianSession.checkIns++;
+  timerSecs = guardianSession.intervalMins * 60;
+  setEl('gm-checkin-count', guardianSession.checkIns);
+
+  // Reset timer arc
+  var arc = document.getElementById('timer-arc');
+  if(arc){ arc.style.strokeDashoffset = '0'; arc.style.stroke = 'var(--green)'; }
+
+  var el = document.getElementById('web-timer-num');
+  if(el){ el.style.color = 'var(--green)'; }
+
+  logGuardianEvent('checkin_ok');
+  showToast('✓ Check-in confirmed. Timer reset to '+guardianSession.intervalMins+' minutes','ok');
+}
+
+// ── Stop Session ─────────────────────────────────────────────
+function stopGuardianMode(){
+  if(!confirm('Stop Guardian Mode session?')) return;
+
+  guardianSession.active = false;
+  if(timerInterval) clearInterval(timerInterval);
+
+  document.getElementById('guardian-inactive').style.display = 'block';
+  document.getElementById('guardian-active').style.display   = 'none';
+  document.getElementById('guardian-status-badge').textContent  = 'Not Active';
+  document.getElementById('guardian-status-badge').style.background = 'var(--bg-el)';
+  document.getElementById('guardian-status-badge').style.color  = 'var(--t2)';
+  document.getElementById('guardian-start-btn').style.display   = '';
+
+  logGuardianEvent('session_stopped');
+  showToast('Guardian Mode stopped. Stay safe.','ok');
+}
+
+// ── Timer Expired — Auto Escalate ────────────────────────────
+function timerExpired(){
+  if(timerInterval) clearInterval(timerInterval);
+  showToast('⚠ Check-in missed — escalating to emergency contacts','err');
+
+  logGuardianEvent('missed_checkin');
+
+  // Trigger SOS automatically after missed check-in
+  if(currentUser){
+    apiCall('trigger_sos', {
+      userId:    currentUser.UserID,
+      siteName:  guardianSession.siteName  || 'Unknown site',
+      auraScore: guardianSession.siteScore || 0,
+      lat:       guardianSession.siteLat   || 0,
+      lng:       guardianSession.siteLng   || 0,
+      contactName:  currentUser.Emergency_Contact_Name  || '',
+      contactPhone: currentUser.Emergency_Phone         || '',
+      trigger:   'auto_escalation'
+    }).then(function(r){
+      if(r && r.success){
+        showToast('Emergency contacts notified via Twilio','err');
+      }
+    });
+  }
+
+  // Start 5-minute secondary escalation countdown
+  guardianSession.escalationTimer = setTimeout(function(){
+    showToast('⚠⚠ No response — emergency services alert triggered','err');
+    logGuardianEvent('emergency_services_notified');
+  }, 5 * 60 * 1000);
+}
+
+// ── Manual SOS ───────────────────────────────────────────────
+async function triggerSOS(){
+  var confirmed = confirm(
+    'TRIGGER SOS?\n\n' +
+    'This will immediately:\n' +
+    '1. Send SMS to your emergency contact with your GPS location\n' +
+    '2. Initiate a voice call via Twilio\n' +
+    '3. Log this event to AuraCharge\n\n' +
+    'Only confirm if you need help.'
+  );
+  if(!confirmed) return;
+
+  showToast('🆘 SOS triggered — contacting emergency contacts now','err');
+
+  var result = await apiCall('trigger_sos', {
+    userId:       currentUser ? currentUser.UserID : 'anonymous',
+    siteName:     guardianSession.siteName  || 'Unknown location',
+    auraScore:    guardianSession.siteScore || 0,
+    lat:          guardianSession.siteLat   || 0,
+    lng:          guardianSession.siteLng   || 0,
+    contactName:  currentUser ? currentUser.Emergency_Contact_Name  : '',
+    contactPhone: currentUser ? currentUser.Emergency_Phone         : '',
+    trigger:      'manual_sos'
+  });
+
+  if(result && result.success){
+    showToast('SOS logged. Twilio escalation active.','err');
+  }
+}
+
+// ── Log Guardian Event to DB ─────────────────────────────────
+async function logGuardianEvent(eventType){
+  if(!currentUser) return;
+  await apiCall('trigger_sos', {
+    userId:    currentUser.UserID,
+    siteName:  guardianSession.siteName  || 'Unknown',
+    auraScore: guardianSession.siteScore || 0,
+    lat:       guardianSession.siteLat   || 0,
+    lng:       guardianSession.siteLng   || 0,
+    trigger:   eventType
+  });
+}
+
+// ── Route to Site ─────────────────────────────────────────────
+function routeToSite(lat, lng, name){
+  if(!lat || !lng || (lat===0 && lng===0)){
+    showToast('No location data available for this site','warn');
+    return;
+  }
+  var dest = lat+','+lng;
+  var label = encodeURIComponent(name||'EV Charging Station');
+  // Opens Google Maps with driving directions
+  var url = 'https://www.google.com/maps/dir/?api=1'
+          + '&destination=' + dest
+          + '&destination_place_id=' + label
+          + '&travelmode=driving';
+  window.open(url, '_blank');
+  showToast('Opening route to '+name+' in Google Maps','ok');
+}
+
+// Also update the static Route button handler to use AuraPath
+function routeToHub(site){
+  if(!site) return;
+  openAuraPath(site);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AURAPATH — NAVIGATION SYSTEM
+// Modular: AuraPath in-app, Google Maps, Waze, future OEM
+// ═══════════════════════════════════════════════════════════════
+
+var currentNavSite      = null;
+var selectedNavProvider = 'aurapath';
+
+function openAuraPath(site){
+  currentNavSite = site;
+  var score  = Math.round(site.TotalAuraScore||0);
+  var name   = site.SiteName||'Charging Hub';
+  var safety = site.SafetyStatus||'';
+
+  document.getElementById('ap-dest-name').textContent  = name;
+  document.getElementById('ap-score').textContent      = score;
+  document.getElementById('ap-dest-label').textContent = name.substring(0,22)+(name.length>22?'…':'');
+  document.getElementById('ap-safety-label').textContent =
+    safety==='Green'?'Safe':safety==='Amber'?'Caution':'Avoid';
+
+  // Score colour
+  var col = score>=80?'var(--green)':score>=50?'var(--amber)':'var(--red)';
+  var bg  = score>=80?'var(--gd)':score>=50?'var(--ad)':'var(--rd)';
+  var bd  = score>=80?'var(--gb)':score>=50?'var(--ab)':'var(--rb)';
+  var chip = document.getElementById('ap-score-chip');
+  if(chip){ chip.style.background=bg; chip.style.borderColor=bd; }
+  var sc = document.getElementById('ap-score');
+  if(sc) sc.style.color = col;
+
+  // Distance calculation
+  var lat = parseFloat(site.Latitude||site.lat||0);
+  var lng = parseFloat(site.Longitude||site.lng||0);
+  if(navigator.geolocation && lat && lng){
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var d = haversineKm(pos.coords.latitude, pos.coords.longitude, lat, lng);
+      document.getElementById('ap-distance').textContent = d<1 ? Math.round(d*1000)+'m' : d.toFixed(1)+' km';
+      var etaMins = Math.round((d/25)*60);
+      document.getElementById('ap-eta').textContent = etaMins<60 ? etaMins+' min' : Math.floor(etaMins/60)+'h '+(etaMins%60)+'m';
+    }, function(){
+      document.getElementById('ap-distance').textContent = '—';
+      document.getElementById('ap-eta').textContent = '—';
+    });
+  } else {
+    document.getElementById('ap-distance').textContent = '—';
+    document.getElementById('ap-eta').textContent = '—';
+  }
+
+  // Show modal
+  var overlay = document.getElementById('aurapath-overlay');
+  var modal   = document.getElementById('aurapath-modal');
+  var sheet   = document.getElementById('aurapath-sheet');
+  overlay.style.display = 'block';
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){ sheet.style.transform='translateY(0)'; });
+  });
+}
+
+function closeAuraPath(){
+  var sheet = document.getElementById('aurapath-sheet');
+  if(sheet) sheet.style.transform = 'translateY(100%)';
+  setTimeout(function(){
+    var overlay = document.getElementById('aurapath-overlay');
+    var modal   = document.getElementById('aurapath-modal');
+    if(overlay) overlay.style.display='none';
+    if(modal)   modal.classList.add('hidden');
+    document.body.style.overflow='';
+  },350);
+}
+
+function selectNavProvider(provider){
+  selectedNavProvider = provider;
+  document.querySelectorAll('.nav-provider-card').forEach(function(c){ c.classList.remove('selected'); });
+  var el = document.getElementById('nav-'+provider);
+  if(el) el.classList.add('selected');
+  var labels = {aurapath:'Navigate with AuraPath',google:'Open in Google Maps',waze:'Open in Waze'};
+  var lbl = document.getElementById('ap-go-label');
+  if(lbl) lbl.textContent = labels[provider]||'Navigate';
+}
+
+function launchNavigation(){
+  if(!currentNavSite){ showToast('No destination selected','warn'); return; }
+  var lat  = parseFloat(currentNavSite.Latitude||currentNavSite.lat||0);
+  var lng  = parseFloat(currentNavSite.Longitude||currentNavSite.lng||0);
+  var name = encodeURIComponent(currentNavSite.SiteName||'Charging Hub');
+  if(!lat||!lng){ showToast('Coordinates not available for this site','warn'); return; }
+
+  closeAuraPath();
+
+  switch(selectedNavProvider){
+    case 'aurapath':
+      showToast('AuraPath navigation started — route to '+(currentNavSite.SiteName||'hub'),'ok');
+      if(currentUser){
+        apiCall('trigger_sos',{
+          userId:currentUser.UserID, siteName:currentNavSite.SiteName,
+          auraScore:Math.round(currentNavSite.TotalAuraScore||0),
+          lat:lat, lng:lng, trigger:'navigation_started_aurapath'
+        });
+      }
+      setTimeout(function(){
+        window.open('https://www.google.com/maps/dir/?api=1&destination='+lat+','+lng+'&travelmode=driving','_blank');
+      },600);
+      break;
+    case 'google':
+      window.open('https://www.google.com/maps/dir/?api=1&destination='+lat+','+lng+'&travelmode=driving','_blank');
+      break;
+    case 'waze':
+      window.open('https://waze.com/ul?ll='+lat+','+lng+'&navigate=yes&zoom=17','_blank');
+      break;
+    default:
+      window.open('https://maps.google.com/?q='+lat+','+lng,'_blank');
+  }
+}
+
+function haversineKm(lat1,lon1,lat2,lon2){
+  var R=6371, dL=(lat2-lat1)*Math.PI/180, dl=(lon2-lon1)*Math.PI/180;
+  var a=Math.sin(dL/2)*Math.sin(dL/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dl/2)*Math.sin(dl/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// ── Audit Site from Modal ──────────────────────────────────
+function auditCurrentSite(site){
+  closeSiteDetail();
+  navTo('audit',null);
+  setTimeout(function(){
+    var inputs = document.querySelectorAll('#page-audit input[type=text]');
+    if(inputs[0]) inputs[0].value = site.SiteName||'';
+    var pc = document.querySelectorAll('#page-audit input')[1];
+    if(pc) pc.value = (site.Postcode||'').replace(/[\"'\\]/g,'').trim();
+    showToast('Audit form pre-filled for '+(site.SiteName||'site'),'ok');
+  },200);
+}
+
+// ── Export Functions ─────────────────────────────────────────
+function exportActivityPDF(){
+  showToast('Generating your activity report…','');
+  setTimeout(function(){
+    // Build simple CSV of session log for now
+    var rows = [['Date','Site','Duration','Check-ins','Outcome','AuraScore']];
+    document.querySelectorAll('#session-log-body tr').forEach(function(tr){
+      var cells = Array.from(tr.querySelectorAll('td')).map(function(td){ return td.textContent.trim(); });
+      if(cells.length) rows.push(cells);
+    });
+    var csv = rows.map(function(r){ return r.join(','); }).join('\n');
+    var blob = new Blob([csv], {type:'text/csv'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'AuraCharge_Activity_'+new Date().toISOString().split('T')[0]+'.csv';
+    a.click();
+    showToast('Activity log exported','ok');
+  }, 800);
+}
+
+function exportCPOReport(){
+  showToast('Generating operator report…','');
+  setTimeout(function(){
+    var rows = [['Site','AuraScore','PAS 1899','CCTV','Status']];
+    document.querySelectorAll('#cpo-sites-body tr').forEach(function(tr){
+      var cells = Array.from(tr.querySelectorAll('td')).map(function(td){ return td.textContent.trim(); });
+      if(cells.length) rows.push(cells);
+    });
+    var csv = rows.map(function(r){ return r.join(','); }).join('\n');
+    var blob = new Blob([csv], {type:'text/csv'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'AuraCharge_CPO_Report_'+new Date().toISOString().split('T')[0]+'.csv';
+    a.click();
+    showToast('Report exported','ok');
+  }, 800);
+}
+
+function exportAnonymisedLog(){
+  showToast('Generating anonymised Guardian event log…','');
+  setTimeout(function(){
+    var rows = [['Time','Site','AuraScore at Event','Event Type','Resolution','Duration']];
+    document.querySelectorAll('#cpo-guardian-body tr').forEach(function(tr){
+      var cells = Array.from(tr.querySelectorAll('td')).map(function(td){ return td.textContent.trim(); });
+      if(cells.length) rows.push(cells);
+    });
+    var csv = rows.map(function(r){ return r.join(','); }).join('\n');
+    var blob = new Blob([csv], {type:'text/csv'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'AuraCharge_Guardian_Events_Anonymised_'+new Date().toISOString().split('T')[0]+'.csv';
+    a.click();
+    showToast('Anonymised log exported (no user data included)','ok');
+  }, 800);
+}
+
+function generateReport(){
+  showToast('Report generation queued. This would trigger the AI_Auditor_App pipeline in production.','ok');
+}
+
+function markAllAlertsRead(){
+  document.querySelectorAll('.alert-item').forEach(function(el){
+    el.style.opacity = '0.5';
+  });
+  showToast('All alerts marked as read','ok');
+}
+
+// ── Settings Save ────────────────────────────────────────────
+async function saveSettings(){
+  var name   = document.getElementById('settings-name')?.value?.trim();
+  var interval = document.querySelector('#page-settings select')?.value;
+
+  if(interval){
+    guardianSession.intervalMins = parseInt(interval)||20;
+    setEl('gm-interval-display', guardianSession.intervalMins+' min');
+  }
+
+  showToast('Settings saved','ok');
+  // In production: update Aura_Drivers record via QUERY_API
+}
+
+// ── Add Site (CPO) ───────────────────────────────────────────
+function showAddSiteModal(){
+  showToast('Add Site — use the manual audit form to register a new charging site','ok');
+  navTo('audit', null);
+}
+
+// ── Update startGuardianAtSite to also populate lat/lng ──────
+var _origStartGuardian = startGuardianAtSite;
+
+function openSiteDetail(s){
+  var score    = Math.round(s.TotalAuraScore||0);
+  var name     = s.SiteName||'Unknown Site';
+  var address  = s.Address||s.SiteAddress||'';
+  var postcode = (s.Postcode||'').replace(/[\"']/g,'').trim();
+  var safety   = s.SafetyStatus||'';
+  var auraSafe = s.AuraSafety||'';
+  var source   = s.Source||s.DataSource||'';
+  var operator = s.Operator_Name||'';
+  var auditDate= s.AuditDate ? formatDate(s.AuditDate) : '';
+  var auditId  = s.AuditID||'';
+  var crimeVal = s.HistoricalCrimeReport;
+
+  // ── Colours ──
+  var isGreen = safety==='Green'||(score>=80&&!safety);
+  var isAmber = safety==='Amber'||(score>=50&&score<70&&!safety);
+  var col    = isGreen?'var(--green)':isAmber?'var(--amber)':'var(--red)';
+  var bgCol  = isGreen?'var(--gd)':isAmber?'var(--ad)':'var(--rd)';
+  var bdCol  = isGreen?'var(--gb)':isAmber?'var(--ab)':'var(--rb)';
+
+  // ── Score badge ──
+  var badge = document.getElementById('sm-score-badge');
+  badge.style.background = bgCol;
+  badge.style.borderColor = bdCol;
+  var numEl = document.getElementById('sm-score-num');
+  numEl.textContent = score||'—';
+  numEl.style.color = col;
+  var safeLabel = document.getElementById('sm-safe-label');
+  safeLabel.textContent = isGreen?'Safe to approach':isAmber?'Caution advised':'Avoid at night';
+  safeLabel.style.color = col;
+
+  // ── Icon wrap ──
+  var iconWrap = document.getElementById('sm-icon-wrap');
+  if(iconWrap){ iconWrap.style.background=bgCol; iconWrap.style.borderColor=bdCol; }
+
+  // ── Text ──
+  document.getElementById('sm-name').textContent    = name;
+  document.getElementById('sm-address').textContent = address||'Address not available';
+  var pcEl = document.getElementById('sm-postcode');
+  if(pcEl) pcEl.textContent = postcode?'📍 '+postcode:'';
+
+  // ── Status bar ──
+  var sb = document.getElementById('sm-status-bar');
+  if(sb){
+    sb.style.background=bgCol; sb.style.borderColor=bdCol; sb.style.color=col;
+    var desc = document.getElementById('sm-aura-desc-short');
+    if(desc) desc.textContent = auraSafe||
+      (isGreen?'Safe Zone — Recommended for charging':
+       isAmber?'Caution — Review conditions before charging':
+       'Avoid — Not recommended at night');
+  }
+
+  // ── Meta ──
+  var srcEl = document.getElementById('sm-source');
+  if(srcEl) srcEl.textContent =
+    source==='Manual'?'📋 Manual Audit':
+    (source==='AI_OCM'||source==='OCM'||source==='AI OCM')?'🤖 AI Audited':
+    source?'📊 '+source:'';
+  var opEl = document.getElementById('sm-operator');
+  if(opEl) opEl.textContent = operator?'🏢 '+operator:'';
+  var dtEl = document.getElementById('sm-audit-date');
+  if(dtEl) dtEl.textContent = auditDate?'🗓 '+auditDate:'';
+
+  // ── Tags ──
+  var tagsEl = document.getElementById('sm-tags');
+  tagsEl.innerHTML='';
+  // Azure returns numbers as strings — force numeric comparison
+  var hasCCTV  = parseFloat(s.Visual_Score_Converted)  > 0;
+  var lightSc  = parseFloat(s.Task_Lighting_Converted||0) + parseFloat(s.Perimeter_Lighting_Score_Converted||0);
+  var hasLight = lightSc > 0;
+  var hasHelp  = parseFloat(s.Help_Button_Converted)   > 0;
+  var hasProx  = parseFloat(s.Proximity247_Score_Converted) > 0;
+  var crimeTagHtml = crimeTag(crimeVal);
+  var safetyTag= isGreen?'<span class="tag tg">✓ Safe Zone</span>':
+                 isAmber?'<span class="tag ta">⚠ Caution</span>':
+                         '<span class="tag tr">✕ Avoid Night</span>';
+  tagsEl.innerHTML = safetyTag +
+    (hasCCTV?'<span class="tag tg">📷 CCTV</span>':'<span class="tag tr">No CCTV</span>') +
+    (hasLight?'<span class="tag tg">💡 Well Lit</span>':'') +
+    (hasHelp?'<span class="tag tg">🆘 Help Button</span>':'') +
+    (hasProx?'<span class="tag tg">24/7 Nearby</span>':'') +
+    crimeTagHtml;
+
+  // ── Pillar Breakdown ──
+  var pillarsEl = document.getElementById('sm-pillars');
+  pillarsEl.innerHTML='';
+  var pillars=[
+    {name:'Visual Security (CCTV)',  val:parseFloat(s.Visual_Score_Converted),                raw:s.Visual_CCTV_Text_Raw,         max:20},
+    {name:'Security Signage',        val:parseFloat(s.Security_signage_Converted),             raw:s.Security_signage_Text_Raw,    max:10},
+    {name:'Task Lighting',           val:parseFloat(s.Task_Lighting_Converted),                raw:s.Task_Lighting_Raw,            max:10},
+    {name:'Perimeter Lighting',      val:parseFloat(s.Perimeter_Lighting_Score_Converted),     raw:s.Perimeter_Lighting_Text_Raw,  max:10},
+    {name:'24/7 Proximity',          val:parseFloat(s.Proximity247_Score_Converted),           raw:s.Proximity247_Text_Raw,        max:15},
+    {name:'Line of Sight',           val:parseFloat(s.Line_of_Sight_Converted),                raw:s.Line_of_Sight_Raw,            max:10},
+    {name:'Open Sightlines',         val:parseFloat(s.Open_Sightlines_Converted),             raw:s.Open_Sightlines_Raw,          max:10},
+    {name:'Connectivity',            val:parseFloat(s.Connectivity_Converted),                 raw:s.Connectivity_Raw,             max:5},
+    {name:'Bay Space',               val:parseFloat(s.Bay_Space_Converted),                    raw:s.Bay_Space_Raw,                max:5},
+    {name:'Help Button',             val:parseFloat(s.Help_Button_Converted),                  raw:s.Help_Button_Raw,              max:5},
+    {name:'Crime History',
+      val: (function(){
+        var cs = crimeScore(crimeVal);
+        return cs ? cs.points : null;
+      })(),
+      raw: crimeVal != null ? (function(){
+        var cs = crimeScore(crimeVal);
+        return crimeVal+' monthly incidents — '+(cs?cs.label:'');
+      })() : null,
+      max:20}
+  ];
+  var hasPillar = pillars.some(function(p){return p.val!=null&&p.val>0;});
+  if(!hasPillar){
+    pillarsEl.innerHTML =
+      '<div style="padding:20px;background:var(--bg-card2);border-radius:12px;text-align:center;">'+
+      '<div style="font-family:Syne,sans-serif;font-size:48px;font-weight:800;color:'+col+';line-height:1;">'+score+'</div>'+
+      '<div style="font-size:13px;color:var(--t2);margin-top:8px;">Composite AuraScore™</div>'+
+      '<div style="font-size:11px;color:var(--t3);margin-top:6px;line-height:1.6;">'+
+        'Update your database view to expose pillar columns.<br>See setup guide for the ALTER VIEW SQL.'+
+      '</div></div>';
+  } else {
+    pillars.forEach(function(p){
+      if(p.val==null) return;
+      var pct = Math.min(100, p.max>0?Math.round((p.val/p.max)*100):0);
+      var bc  = pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)';
+      var row = document.createElement('div');
+      row.style.cssText='padding:10px 0;border-bottom:1px solid var(--border);';
+      row.innerHTML=
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">'+
+          '<div style="font-size:13px;color:var(--t1);font-weight:500;">'+p.name+'</div>'+
+          '<div style="font-family:Syne,sans-serif;font-size:14px;font-weight:800;color:'+bc+';">+'+Math.round(p.val)+'</div>'+
+        '</div>'+
+        '<div style="height:5px;background:var(--bg-el);border-radius:3px;margin-bottom:'+(p.raw?'5px':'0')+';">'+
+          '<div style="width:'+pct+'%;height:5px;background:'+bc+';border-radius:3px;"></div>'+
+        '</div>'+
+        (p.raw?'<div style="font-size:10px;color:var(--t3);">'+p.raw+'</div>':'');
+      pillarsEl.appendChild(row);
+    });
+    // Total
+    var tot=document.createElement('div');
+    tot.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:12px 0;';
+    tot.innerHTML=
+      '<div style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;">Total AuraScore™</div>'+
+      '<div style="font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:'+col+';">'+score+'</div>';
+    pillarsEl.appendChild(tot);
+  }
+
+  // ── Guardian btn ──
+  document.getElementById('sm-guardian-btn').onclick=function(){
+    closeSiteDetail();
+    startGuardianAtSite(auditId, name, score, parseFloat(s.Latitude||0), parseFloat(s.Longitude||0));
+  };
+
+  // ── Navigate AuraPath btn ──
+  document.getElementById('sm-route-btn').onclick=function(){
+    closeSiteDetail();
+    setTimeout(function(){ openAuraPath(s); }, 300);
+  };
+
+  // ── Audit Site btn ──
+  document.getElementById('sm-audit-btn').onclick=function(){
+    auditCurrentSite(s);
+  };
+
+  // ── Animate in ──
+  var overlay=document.getElementById('site-modal-overlay');
+  var modal  =document.getElementById('site-modal');
+  overlay.style.display='block';
+  modal.style.display='flex';
+  modal.scrollTop=0;
+  document.body.style.overflow='hidden';
+  modal.style.transform='translateX(-50%) translateY(100%)';
+  modal.style.transition='transform .35s cubic-bezier(.32,1,.32,1)';
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      modal.style.transform='translateX(-50%) translateY(0)';
+    });
+  });
+}
+
+function closeSiteDetail(){
+  var modal=document.getElementById('site-modal');
+  modal.style.transform='translateX(-50%) translateY(100%)';
+  setTimeout(function(){
+    document.getElementById('site-modal-overlay').style.display='none';
+    modal.style.display='none';
+    document.body.style.overflow='';
+  },300);
+}
+
+// ── UTILS ────────────────────────────────────────────────────
+function setEl(id, val){
+  var el=document.getElementById(id);
+  if(el) el.textContent=val;
+}
+
+function formatDate(str){
+  if(!str) return '—';
+  try {
+    var d=new Date(str);
+    return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+' · '+
+           d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  } catch(e){ return str; }
+}
+
+// ── TOGGLES ──────────────────────────────────────────────────
+document.addEventListener('click',function(e){
+  if(e.target.classList.contains('toggle')){
+    e.target.classList.toggle('on');
+    e.target.classList.toggle('off');
+  }
+});
+
+// ── HEATMAP (CPO) ─────────────────────────────────────────────
+function buildHeatmap(){
+  var sites=['Aztec West','Bradley Stoke','Cribbs Causeway','Gainsborough'];
+  var data={
+    'Aztec West':    [88,87,86,88,89,90,91,90,89,88,80,75,82,85,88,90,88,85,80,74,70,65,72,80],
+    'Bradley Stoke': [91,90,89,90,91,92,91,90,89,88,85,82,85,88,91,92,90,88,85,80,75,70,78,85],
+    'Cribbs Causeway':[74,73,72,74,75,76,75,74,73,72,68,65,68,72,75,76,74,70,65,60,55,52,60,68],
+    'Gainsborough':  [48,46,45,48,50,52,50,48,46,44,40,38,42,45,48,50,48,44,40,35,30,28,35,42]
+  };
+  // Override with live CPO sites if available
+  var container=document.getElementById('heatmap-rows');
+  if(!container) return;
+  container.innerHTML='';
+  sites.forEach(function(site){
+    var row=document.createElement('div');
+    row.style.cssText='display:grid;grid-template-columns:90px repeat(12,1fr);gap:3px;margin-bottom:3px;align-items:center;min-width:600px;';
+    var lbl=document.createElement('div');
+    lbl.style.cssText='font-size:11px;color:var(--t2);text-align:right;padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+    lbl.textContent=site;
+    row.appendChild(lbl);
+    for(var i=0;i<12;i++){
+      var score=data[site][i*2];
+      var cell=document.createElement('div');
+      cell.className='heat-cell';
+      cell.textContent=score;
+      if(score>=80){cell.style.background='#00E87A22';cell.style.color='var(--green)';}
+      else if(score>=50){cell.style.background='#FFB02022';cell.style.color='var(--amber)';}
+      else{cell.style.background='#FF3B3B22';cell.style.color='var(--red)';}
+      row.appendChild(cell);
+    }
+    container.appendChild(row);
+  });
+}
+
+// ── MOBILE NAV ───────────────────────────────────────────────
+function setMobActive(id){
+  document.querySelectorAll('.mob-nav-item').forEach(function(el){
+    el.classList.remove('active');
+  });
+  var el = document.getElementById(id);
+  if(el) el.classList.add('active');
+}
+
+function showMobileNav(role){
+  var nav = document.getElementById('mobile-nav');
+  if(!nav) return;
+  // Only show on mobile screen widths
+  if(window.innerWidth <= 600){
+    nav.style.display = 'flex';
+  }
+  // Show/hide CPO vs driver items if needed
+  // For now driver nav covers both — CPO can use same nav with different pages
+}
+
+function hideMobileNav(){
+  var nav = document.getElementById('mobile-nav');
+  if(nav) nav.style.display = 'none';
+}
+
+// Update navTo to also sync mobile nav active state
+var _origNavTo = navTo;
+
+// Non-linear normalisation scale from AuraCharge business plan
+function crimeScore(incidents){
+  if(incidents == null || isNaN(incidents)) return null;
+  var n = parseFloat(incidents);
+  if(n <= 10)  return {points:20, label:'Exceptional Safety',           tag:'tg', short:'Exceptional'};
+  if(n <= 40)  return {points:15, label:'Secure Urban Area',            tag:'tg', short:'Secure Area'};
+  if(n <= 90)  return {points:10, label:'Standard Risk (Caution)',      tag:'ta', short:'Std. Risk'};
+  if(n <= 160) return {points:5,  label:'High Risk (Guardian Advised)', tag:'tr', short:'High Risk'};
+  return            {points:0,  label:'Critical Risk (Avoid at Night)','tag':'tr', short:'Critical Risk'};
+}
+
+function crimeTag(incidents){
+  var cs = crimeScore(incidents);
+  if(!cs) return '';
+  return '<span class="tag '+cs.tag+'" title="'+cs.label+' — '+incidents+' incidents">'+cs.short+'</span>';
+}
+function getDemoData(action, payload){
+  var demoSites=[
+    {SiteID:'s1',SiteName:'Aztec West Retail Park',Address:'Patchway, Bristol BS32',Latitude:51.523,Longitude:-2.544,AuraScore:88,CCTV:'Active',Staffed:true,Lighting:'High',Stalls:8,AvailableStalls:6,ConnectorTypes:'CCS, Type 2',OperatingHours:'24/7'},
+    {SiteID:'s2',SiteName:'Bradley Stoke Lidl',Address:'Bradley Stoke BS32',Latitude:51.531,Longitude:-2.551,AuraScore:91,CCTV:'Active',Staffed:false,Lighting:'High',Stalls:4,AvailableStalls:1,ConnectorTypes:'Type 2',OperatingHours:'Closes 22:00'},
+    {SiteID:'s3',SiteName:'Cribbs Causeway Tesla',Address:'Cribbs Causeway, Patchway',Latitude:51.519,Longitude:-2.560,AuraScore:74,CCTV:'Partial',Staffed:false,Lighting:'Moderate',Stalls:12,AvailableStalls:4,ConnectorTypes:'Supercharger',OperatingHours:'24/7'},
+    {SiteID:'s4',SiteName:'Gainsborough Retail',Address:'North Bristol BS10',Latitude:51.505,Longitude:-2.575,AuraScore:48,CCTV:'None',Staffed:false,Lighting:'Low',Stalls:2,AvailableStalls:2,ConnectorTypes:'CHAdeMO',OperatingHours:'24/7'}
+  ];
+  var demoSessions=[
+    {SessionDate:'2026-03-21T22:09:00',SiteName:'Aztec West Retail Park',DurationMinutes:45,CheckInsCompleted:2,CheckInsExpected:2,Outcome:'Completed',AuraScoreAtEvent:88},
+    {SessionDate:'2026-03-17T21:12:00',SiteName:'Cribbs Causeway Tesla',DurationMinutes:32,CheckInsCompleted:1,CheckInsExpected:1,Outcome:'Completed',AuraScoreAtEvent:74},
+    {SessionDate:'2026-03-12T20:05:00',SiteName:'Bradley Stoke Lidl',DurationMinutes:22,CheckInsCompleted:0,CheckInsExpected:1,Outcome:'Escalated',AuraScoreAtEvent:91}
+  ];
+  var demoCPOLog=[
+    {EventTime:'2026-03-21T22:14:00',SiteName:'Aztec West Retail Park',AuraScoreAtEvent:88,EventType:'Missed check-in',Resolution:'Self-resolved',DurationMinutes:3},
+    {EventTime:'2026-03-21T21:05:00',SiteName:'Cribbs Causeway Tesla',AuraScoreAtEvent:74,EventType:'Check-in OK',Resolution:'Normal',DurationMinutes:45},
+    {EventTime:'2026-03-21T20:38:00',SiteName:'Aztec West Retail Park',AuraScoreAtEvent:88,EventType:'SOS triggered',Resolution:'Resolved',DurationMinutes:12},
+    {EventTime:'2026-03-20T18:22:00',SiteName:'Bradley Stoke Lidl',AuraScoreAtEvent:91,EventType:'Session complete',Resolution:'Normal',DurationMinutes:32}
+  ];
+  var demoCPOSites=[
+    {SiteName:'Aztec West Retail Park',AuraScore:88,CCTV:'Active',PAS1899Compliant:true,LastEvent:'2026-03-21',TotalEvents:5},
+    {SiteName:'Bradley Stoke Lidl',AuraScore:91,CCTV:'Active',PAS1899Compliant:true,LastEvent:'2026-03-20',TotalEvents:3},
+    {SiteName:'Cribbs Causeway Tesla',AuraScore:74,CCTV:'Partial',PAS1899Compliant:false,LastEvent:'2026-03-21',TotalEvents:8},
+    {SiteName:'Gainsborough Retail',AuraScore:48,CCTV:'None',PAS1899Compliant:false,LastEvent:'2026-03-19',TotalEvents:2}
+  ];
+  var map = {
+    get_sites:          {success:true, sites: demoSites},
+    get_driver_sessions:{success:true, sessions: demoSessions},
+    get_guardian_log:   {success:true, log: demoCPOLog},
+    get_cpo_stats:      {success:true, sites: demoCPOSites},
+    login:              {success:true, user:{UserID:'demo-001',FullName:'Joshua Odejayi',Email:'demo@auracharge.uk',Role:'driver'}},
+    register:           {success:true, message:'Account created.'},
+    waitlist_register:  {success:true, message:"You're on the list."},
+    submit_audit:       {success:true, message:'Audit submitted.'},
+    trigger_sos:        {success:true, message:'SOS logged.'},
+    get_cpo_stats:      {success:true, sites: demoCPOSites}
+  };
+  return map[action] || {success:false, message:'Unknown action'};
+}
+</script>
+</body>
+</html>
